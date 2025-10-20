@@ -1,0 +1,317 @@
+/* THEME: Mörk Borg */
+
+/* Mörk Borg Color Palette */
+:root {
+    /* Dark, apocalyptic colors */
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #0d0d0d;
+    --bg-gradient: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+    --text-primary: #f0f0f0;
+    --text-secondary: #d4d4d4;
+    --text-muted: #a0a0a0;
+    --text-inverse: #000000;
+
+    /* Card Colors - Dark with subtle borders */
+    --card-bg: rgba(20, 20, 20, 0.95);
+    --card-border: rgba(255, 215, 0, 0.3);
+    --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+
+    /* Button Colors - Mörk Borg style */
+    --btn-primary-bg: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+    --btn-primary-hover: 0 8px 25px rgba(255, 215, 0, 0.4);
+    --btn-success-bg: #228b22;
+    --btn-success-hover: #32cd32;
+    --btn-danger-bg: #8b0000;
+    --btn-danger-hover: #dc143c;
+    --btn-info-bg: #ffd700;
+    --btn-info-hover: #ffed4e;
+
+    /* Input Colors */
+    --input-bg: #2a2a2a;
+    --input-border: #ffd700;
+    --input-border-focus: #ff8c00;
+    --input-focus-shadow: 0 0 0 3px rgba(255, 215, 0, 0.3);
+
+    /* Character Card Colors */
+    --character-bg: #2a2a2a;
+    --character-border: transparent;
+    --character-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+    --character-hover-shadow: 0 8px 25px rgba(255, 215, 0, 0.2);
+    --character-hover-border: #ffd700;
+
+    /* Completed Character Colors - Dark green */
+    --completed-bg: linear-gradient(135deg, #228b22 0%, #32cd32 100%);
+    --completed-text: #000000;
+
+    /* Enemy Colors - Dark red */
+    --enemy-bg: linear-gradient(135deg, #8b0000 0%, #dc143c 100%);
+    --enemy-text: #ffffff;
+
+    /* Control Button Colors */
+    --control-bg: rgba(255, 215, 0, 0.2);
+    --control-hover: rgba(255, 215, 0, 0.4);
+
+    /* Typography - Bold, impactful fonts */
+    --font-family: 'Courier New', 'Monaco', 'Lucida Console', monospace;
+    --font-size-h1: 3rem;
+    --font-size-h2: 1.8rem;
+    --font-size-h3: 1.4rem;
+    --font-size-body: 1rem;
+    --font-size-small: 0.9rem;
+}
+
+/* Mörk Borg specific styling */
+body {
+    background: var(--bg-gradient);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+h1 {
+    color: #ffd700;
+    font-size: var(--font-size-h1);
+    font-weight: 900;
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.9);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+h2 {
+    color: #ff8c00;
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    letter-spacing: 1px;
+}
+
+h3 {
+    color: #ffd700;
+    font-weight: 700;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* Character cards with Mörk Borg styling */
+.character-card {
+    background: var(--character-bg);
+    border: 2px solid #ffd700;
+    border-radius: 8px;
+    box-shadow: var(--character-shadow), inset 0 0 10px rgba(255, 215, 0, 0.1);
+    position: relative;
+}
+
+.character-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 215, 0, 0.05) 50%, transparent 70%);
+    pointer-events: none;
+    border-radius: 6px;
+}
+
+.character-card:hover {
+    border-color: #ff8c00;
+    box-shadow: var(--character-hover-shadow), 0 0 20px rgba(255, 215, 0, 0.3);
+    transform: translateY(-3px);
+}
+
+.character-card.completed {
+    background: var(--completed-bg);
+    border-color: #32cd32;
+    color: var(--completed-text);
+    box-shadow: 0 4px 15px rgba(34, 139, 34, 0.4);
+}
+
+.character-card.enemy {
+    background: var(--enemy-bg);
+    border-color: #dc143c;
+    color: var(--enemy-text);
+    box-shadow: 0 4px 15px rgba(139, 0, 0, 0.4);
+}
+
+/* Input styling with Mörk Borg feel */
+.input-group input {
+    background: var(--input-bg);
+    border: 2px solid var(--input-border);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-weight: bold;
+}
+
+.input-group input:focus {
+    border-color: var(--input-border-focus);
+    box-shadow: var(--input-focus-shadow);
+    background: #3a3a3a;
+}
+
+.input-group input::placeholder {
+    color: #666;
+    font-style: italic;
+}
+
+/* Buttons with Mörk Borg styling */
+.input-group button {
+    background: var(--btn-primary-bg);
+    color: var(--text-inverse);
+    font-family: var(--font-family);
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: 2px solid #ff8c00;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+.input-group button:hover {
+    background: linear-gradient(135deg, #ffed4e 0%, #ffd700 100%);
+    color: var(--text-inverse);
+    box-shadow: var(--btn-primary-hover), 0 0 15px rgba(255, 215, 0, 0.4);
+    transform: translateY(-3px);
+}
+
+/* Control buttons */
+.control-btn {
+    font-family: var(--font-family);
+    font-weight: bold;
+    border: 1px solid rgba(255, 215, 0, 0.5);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.control-btn:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+    transform: scale(1.15);
+}
+
+/* Large action buttons */
+.complete-btn-large {
+    background: var(--btn-success-bg);
+    border: 3px solid #32cd32;
+    box-shadow: 0 6px 20px rgba(34, 139, 34, 0.6);
+    font-family: var(--font-family);
+    font-weight: 900;
+}
+
+.complete-btn-large:hover {
+    background: var(--btn-success-hover);
+    box-shadow: 0 8px 25px rgba(50, 205, 50, 0.8);
+    transform: scale(1.15);
+}
+
+.return-btn-large {
+    background: var(--btn-info-bg);
+    border: 3px solid #ff8c00;
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
+    font-family: var(--font-family);
+    font-weight: 900;
+}
+
+.return-btn-large:hover {
+    background: var(--btn-info-hover);
+    box-shadow: 0 8px 25px rgba(255, 237, 78, 0.8);
+    transform: scale(1.15);
+}
+
+.delete-btn {
+    background: var(--btn-danger-bg);
+    border: 1px solid #dc143c;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.delete-btn:hover {
+    background: var(--btn-danger-hover);
+    box-shadow: 0 4px 8px rgba(220, 20, 60, 0.6);
+    transform: scale(1.15);
+}
+
+/* HP controls */
+.hp-btn {
+    background: var(--control-bg);
+    border: 1px solid rgba(255, 215, 0, 0.5);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-weight: bold;
+}
+
+.hp-btn:hover {
+    background: var(--control-hover);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.hp-display {
+    background: rgba(255, 215, 0, 0.2);
+    border: 1px solid rgba(255, 215, 0, 0.5);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-weight: bold;
+}
+
+/* Column headers */
+.column h2 {
+    color: #ffd700;
+    border-bottom: 3px solid #ff8c00;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+/* Empty state */
+.empty-state {
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    border: 2px dashed rgba(255, 215, 0, 0.3);
+    background: rgba(20, 20, 20, 0.5);
+}
+
+/* Modal styling */
+.modal-content {
+    background: var(--card-bg);
+    border: 3px solid #ffd700;
+    box-shadow: var(--shadow-xl), 0 0 30px rgba(255, 215, 0, 0.3);
+}
+
+.modal-content h2 {
+    color: #ffd700;
+    font-family: var(--font-family);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.modal-content button {
+    background: var(--btn-primary-bg);
+    color: var(--text-inverse);
+    font-family: var(--font-family);
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: 2px solid #ff8c00;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+.modal-content button:hover {
+    background: linear-gradient(135deg, #ffed4e 0%, #ffd700 100%);
+    box-shadow: var(--btn-primary-hover);
+    transform: translateY(-2px);
+}
+
+/* Responsive adjustments for Mörk Borg */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2.2rem;
+        letter-spacing: 1px;
+    }
+
+    .character-card {
+        border-width: 1px;
+    }
+
+    .complete-btn-large, .return-btn-large {
+        width: 45px;
+        height: 45px;
+        font-size: 1.3rem;
+    }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "initiative-tracker-tests",
+  "version": "1.0.0",
+  "description": "Command-line test suite for RPG Initiative Tracker",
+  "scripts": {
+    "test": "mocha test/**/*.js --reporter spec --require test/setup.js",
+    "test:watch": "mocha test/**/*.js --reporter spec --watch --require test/setup.js",
+    "test:unit": "mocha test/unit-tests.js --reporter spec --require test/setup.js",
+    "test:theme": "mocha test/theme-tests.js --reporter spec --require test/setup.js",
+    "test:integration": "mocha test/integration-tests.js --reporter spec --require test/setup.js",
+    "test:ui": "mocha test/ui-tests.js --reporter spec --require test/setup.js",
+    "test:data": "mocha test/data-tests.js --reporter spec --require test/setup.js",
+    "test:coverage": "nyc mocha test/**/*.js --reporter spec --require test/setup.js",
+    "test:verbose": "mocha test/**/*.js --reporter spec --require test/setup.js --reporter-options verbose=true"
+  },
+  "devDependencies": {
+    "mocha": "^10.2.0",
+    "chai": "^4.3.7",
+    "jsdom": "^22.1.0",
+    "sinon": "^15.0.0",
+    "nyc": "^15.1.0"
+  },
+  "keywords": ["testing", "rpg", "initiative-tracker", "mocha", "chai"],
+  "author": "Initiative Tracker Team",
+  "license": "MIT"
+}

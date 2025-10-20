@@ -1,0 +1,47 @@
+{
+  "format": "[{prefix} ]{name}[{suffix}]",
+  "prefix": [
+    "Wretched",
+    "Foul",
+    "Bitter",
+    "Cursed",
+    "Rotten",
+    "Putrid",
+    "Vile",
+    "Miserable"
+  ],
+  "name": [
+    "Galgenbeck",
+    "Sarkash",
+    "Vurmgorn",
+    "Thrall",
+    "Gristle",
+    "Vex",
+    "Skuld",
+    "Meg",
+    "Orm",
+    "Corpse-Grinder",
+    "Pox",
+    "Scorn",
+    "Gutter",
+    "Svart",
+    "Retch",
+    "Maggot",
+    "Kell",
+    "Wretch",
+    "Pustule",
+    "Rottmaw",
+    "Filth",
+    "Carrion",
+    "Blight",
+    "Scab"
+  ],
+  "suffix": [
+    " the Damned",
+    " the Cursed",
+    " the Doomed",
+    " Bonegnawer",
+    " Fleshrender",
+    " Maggotmaw"
+  ]
+}

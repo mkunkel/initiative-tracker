@@ -1,0 +1,441 @@
+/* THEME: Corp Borg */
+
+/* Corp Borg - MÖRK BORG office horror with yellow background, black/red text */
+:root {
+    /* Yellow background with black/red text */
+    --bg-primary: #ffeb00;
+    --bg-secondary: #fff44d;
+    --bg-gradient: linear-gradient(135deg, #ffeb00 0%, #ffed4e 50%, #ffeb00 100%);
+    --text-primary: #000000;
+    --text-secondary: #fe002b;
+    --text-muted: #404040;
+    --text-inverse: #ffeb00;
+
+    /* Card Colors - Yellow with red/black accents */
+    --card-bg: rgba(255, 235, 0, 0.95);
+    --card-border: rgba(0, 0, 0, 0.8);
+    --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+
+    /* Button Colors - Black primary, red danger */
+    --btn-primary-bg: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+    --btn-primary-hover: 0 8px 25px rgba(0, 0, 0, 0.5);
+    --btn-success-bg: #000000;
+    --btn-success-hover: #1a1a1a;
+    --btn-danger-bg: #fe002b;
+    --btn-danger-hover: #ff3355;
+    --btn-info-bg: #000000;
+    --btn-info-hover: #1a1a1a;
+
+    /* Input Colors */
+    --input-bg: #fff44d;
+    --input-border: #000000;
+    --input-border-focus: #fe002b;
+    --input-focus-shadow: 0 0 0 3px rgba(254, 0, 43, 0.3);
+
+    /* Character Card Colors */
+    --character-bg: #ffed4e;
+    --character-border: transparent;
+    --character-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    --character-hover-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    --character-hover-border: #000000;
+
+    /* Completed Character Colors - Archived gray */
+    --completed-bg: linear-gradient(135deg, #e4e4e4 0%, #cccccc 100%);
+    --completed-text: #404040;
+
+    /* Enemy Colors - Demonic blood red */
+    --enemy-bg: linear-gradient(135deg, #fe002b 0%, #cc0022 100%);
+    --enemy-text: #000000;
+
+    /* Control Button Colors */
+    --control-bg: rgba(0, 0, 0, 0.1);
+    --control-hover: rgba(0, 0, 0, 0.2);
+
+    /* Typography - Bold monospace */
+    --font-family: 'Courier New', 'Monaco', 'Lucida Console', monospace;
+    --font-size-h1: 3rem;
+    --font-size-h2: 1.8rem;
+    --font-size-h3: 1.4rem;
+    --font-size-body: 1rem;
+    --font-size-small: 0.9rem;
+}
+
+/* Corp Borg specific styling - occult office nightmare */
+body {
+    background: var(--bg-gradient);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-weight: 700;
+    text-shadow: none;
+    position: relative;
+}
+
+/* Office grid with black lines */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 50px,
+            rgba(0, 0, 0, 0.1) 50px,
+            rgba(0, 0, 0, 0.1) 51px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 50px,
+            rgba(0, 0, 0, 0.1) 50px,
+            rgba(0, 0, 0, 0.1) 51px
+        );
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Blood splatter overlay */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        radial-gradient(circle at 20% 30%, rgba(254, 0, 43, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(254, 0, 43, 0.1) 0%, transparent 35%),
+        radial-gradient(circle at 50% 50%, rgba(254, 0, 43, 0.12) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.container {
+    position: relative;
+    z-index: 1;
+}
+
+h1 {
+    color: #000000;
+    font-size: var(--font-size-h1);
+    font-weight: 900;
+    text-shadow:
+        2px 2px 0px #fe002b,
+        4px 4px 0px rgba(0, 0, 0, 0.2);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+}
+
+h2 {
+    color: #fe002b;
+    font-weight: 900;
+    text-shadow: 1px 1px 0px #000000;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+h3 {
+    color: #000000;
+    font-weight: 900;
+    text-shadow: none;
+}
+
+/* Character cards with occult office aesthetic */
+.character-card {
+    background: var(--character-bg);
+    border: 3px solid #000000;
+    border-radius: 4px;
+    box-shadow: var(--character-shadow);
+    position: relative;
+}
+
+/* Demonic office pattern */
+.character-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        repeating-linear-gradient(
+            45deg,
+            transparent 0px,
+            transparent 10px,
+            rgba(0, 0, 0, 0.03) 10px,
+            rgba(0, 0, 0, 0.03) 11px
+        );
+    pointer-events: none;
+    border-radius: 2px;
+}
+
+.character-card:hover {
+    border-color: #fe002b;
+    box-shadow: var(--character-hover-shadow);
+    transform: translateY(-2px);
+}
+
+.character-card.completed {
+    background: var(--completed-bg);
+    border-color: #808080;
+    color: var(--completed-text);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    opacity: 0.6;
+}
+
+.character-card.enemy {
+    background: var(--enemy-bg);
+    border-color: #8b0000;
+    color: var(--enemy-text);
+    box-shadow: 0 4px 15px rgba(254, 0, 43, 0.5);
+}
+
+/* Enemy cards get occult pentagram pattern */
+.character-card.enemy::before {
+    background:
+        repeating-linear-gradient(
+            45deg,
+            rgba(0, 0, 0, 0.15) 0px,
+            rgba(0, 0, 0, 0.15) 2px,
+            transparent 2px,
+            transparent 4px
+        );
+}
+
+/* Input styling with office terminal feel */
+.input-group input {
+    background: var(--input-bg);
+    border: 3px solid var(--input-border);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-weight: 700;
+}
+
+.input-group input:focus {
+    border-color: var(--input-border-focus);
+    box-shadow: var(--input-focus-shadow);
+    background: #ffffff;
+}
+
+.input-group input::placeholder {
+    color: #666666;
+    font-style: italic;
+}
+
+/* Buttons with black primary styling */
+.input-group button {
+    background: var(--btn-primary-bg);
+    color: #ffeb00;
+    font-family: var(--font-family);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: 3px solid #000000;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    text-shadow: none;
+}
+
+.input-group button:hover {
+    background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+    color: #ffffff;
+    box-shadow: var(--btn-primary-hover);
+    transform: translateY(-2px);
+    border-color: #fe002b;
+}
+
+/* Control buttons */
+.control-btn {
+    font-family: var(--font-family);
+    font-weight: 700;
+    border: 2px solid rgba(0, 0, 0, 0.6);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.control-btn:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    transform: scale(1.1);
+    border-color: #fe002b;
+}
+
+/* Large action buttons - black */
+.complete-btn-large {
+    background: var(--btn-success-bg);
+    border: 4px solid #000000;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    font-family: var(--font-family);
+    font-weight: 900;
+    color: #ffeb00;
+}
+
+.complete-btn-large:hover {
+    background: var(--btn-success-hover);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+    transform: scale(1.1);
+}
+
+.return-btn-large {
+    background: var(--btn-info-bg);
+    border: 4px solid #000000;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    font-family: var(--font-family);
+    font-weight: 900;
+    color: #ffeb00;
+}
+
+.return-btn-large:hover {
+    background: var(--btn-info-hover);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+    transform: scale(1.1);
+}
+
+.delete-btn {
+    background: var(--btn-danger-bg);
+    border: 2px solid #8b0000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    color: #000000;
+}
+
+.delete-btn:hover {
+    background: var(--btn-danger-hover);
+    box-shadow: 0 4px 8px rgba(254, 0, 43, 0.5);
+    transform: scale(1.1);
+}
+
+/* HP controls */
+.hp-btn {
+    background: var(--control-bg);
+    border: 2px solid rgba(0, 0, 0, 0.6);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-weight: 700;
+}
+
+.hp-btn:hover {
+    background: var(--control-hover);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    border-color: #fe002b;
+}
+
+.hp-display {
+    background: rgba(0, 0, 0, 0.1);
+    border: 2px solid rgba(0, 0, 0, 0.6);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-weight: 700;
+}
+
+/* Column headers - office department signs */
+.column h2 {
+    color: #fe002b;
+    border-bottom: 4px solid #000000;
+    text-shadow: 1px 1px 0px #000000;
+    font-weight: 900;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+/* Empty state */
+.empty-state {
+    color: #666666;
+    font-style: italic;
+    text-align: center;
+    border: 2px dashed rgba(0, 0, 0, 0.4);
+    background: rgba(255, 235, 0, 0.5);
+}
+
+/* Modal styling - urgent memo */
+.modal-content {
+    background: #ffeb00;
+    border: 5px solid #000000;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+.modal-content h2 {
+    color: #000000;
+    font-family: var(--font-family);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    text-shadow: 2px 2px 0px #fe002b;
+}
+
+.modal-content button {
+    background: var(--btn-primary-bg);
+    color: #ffeb00;
+    font-family: var(--font-family);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: 3px solid #000000;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content button:hover {
+    background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+    box-shadow: var(--btn-primary-hover);
+    transform: translateY(-2px);
+    border-color: #fe002b;
+}
+
+/* Theme selector */
+.theme-selector {
+    background: rgba(255, 235, 0, 0.95);
+    border: 3px solid #000000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.theme-selector label {
+    color: #000000;
+    font-weight: 900;
+    text-transform: uppercase;
+    text-shadow: none;
+}
+
+.theme-selector select {
+    background: #fff44d;
+    color: #000000;
+    border: 2px solid #000000;
+    font-family: var(--font-family);
+    font-weight: 700;
+}
+
+.theme-selector select:focus {
+    border-color: #fe002b;
+}
+
+/* Character names with bold typography */
+.character-name {
+    font-family: var(--font-family);
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+/* Labels with office style */
+label {
+    font-family: var(--font-family);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2.2rem;
+        letter-spacing: 2px;
+    }
+
+    .character-card {
+        border-width: 2px;
+    }
+
+    .complete-btn-large, .return-btn-large {
+        width: 45px;
+        height: 45px;
+        font-size: 1.3rem;
+        border-width: 2px;
+    }
+}

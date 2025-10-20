@@ -1,0 +1,467 @@
+/* THEME: CY_BORG */
+
+/* CY_BORG - Cyberpunk dystopia with hot pink neon and digital chrome */
+:root {
+    /* Dark chrome and neon colors */
+    --bg-primary: #0a0a0f;
+    --bg-secondary: #1a1a2e;
+    --bg-gradient: linear-gradient(135deg, #0a0a0f 0%, #1a0a1f 50%, #0f0a1a 100%);
+    --text-primary: #ff00ff;
+    --text-secondary: #00ffff;
+    --text-muted: #ff00aa;
+    --text-inverse: #000000;
+
+    /* Card Colors - Dark terminal with hot pink borders */
+    --card-bg: rgba(10, 10, 15, 0.95);
+    --card-border: rgba(255, 0, 255, 0.6);
+    --card-shadow: 0 8px 32px rgba(255, 0, 255, 0.3);
+
+    /* Button Colors - Hot pink and cyan neon */
+    --btn-primary-bg: linear-gradient(135deg, #ff00ff 0%, #ff00aa 100%);
+    --btn-primary-hover: 0 8px 25px rgba(255, 0, 255, 0.6);
+    --btn-success-bg: #00ffff;
+    --btn-success-hover: #00ffaa;
+    --btn-danger-bg: #ff0055;
+    --btn-danger-hover: #ff0088;
+    --btn-info-bg: #ff00ff;
+    --btn-info-hover: #ff44ff;
+
+    /* Input Colors */
+    --input-bg: #1a1a2e;
+    --input-border: #ff00ff;
+    --input-border-focus: #ff00aa;
+    --input-focus-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+
+    /* Character Card Colors */
+    --character-bg: #0f0f1a;
+    --character-border: transparent;
+    --character-shadow: 0 4px 15px rgba(255, 0, 255, 0.3);
+    --character-hover-shadow: 0 8px 25px rgba(255, 0, 255, 0.5);
+    --character-hover-border: #ff00ff;
+
+    /* Completed Character Colors - Cyan success */
+    --completed-bg: linear-gradient(135deg, #005555 0%, #00aaaa 100%);
+    --completed-text: #00ffff;
+
+    /* Enemy Colors - Hot pink threat */
+    --enemy-bg: linear-gradient(135deg, #550022 0%, #aa0055 100%);
+    --enemy-text: #ff00ff;
+
+    /* Control Button Colors */
+    --control-bg: rgba(255, 0, 255, 0.2);
+    --control-hover: rgba(255, 0, 255, 0.4);
+
+    /* Typography - Digital monospace */
+    --font-family: 'Courier New', 'Monaco', 'Lucida Console', monospace;
+    --font-size-h1: 3rem;
+    --font-size-h2: 1.8rem;
+    --font-size-h3: 1.4rem;
+    --font-size-body: 1rem;
+    --font-size-small: 0.9rem;
+}
+
+/* CY_BORG specific styling - neon dystopia */
+body {
+    background: var(--bg-gradient);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-weight: 500;
+    text-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+    position: relative;
+}
+
+/* Digital scanline effect */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        repeating-linear-gradient(
+            0deg,
+            rgba(255, 0, 255, 0.05),
+            rgba(255, 0, 255, 0.05) 1px,
+            transparent 1px,
+            transparent 2px
+        );
+    pointer-events: none;
+    z-index: 0;
+    animation: scanlines 6s linear infinite;
+}
+
+/* Cyberpunk grid overlay */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent 50px,
+            rgba(255, 0, 255, 0.03) 50px,
+            rgba(255, 0, 255, 0.03) 51px
+        ),
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 50px,
+            rgba(0, 255, 255, 0.03) 50px,
+            rgba(0, 255, 255, 0.03) 51px
+        );
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes scanlines {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(100%); }
+}
+
+.container {
+    position: relative;
+    z-index: 1;
+}
+
+h1 {
+    color: #ff00ff;
+    font-size: var(--font-size-h1);
+    font-weight: 900;
+    text-shadow:
+        0 0 10px #ff00ff,
+        0 0 20px #ff00ff,
+        0 0 30px #ff00ff,
+        2px 2px 4px rgba(0, 0, 0, 0.8);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    animation: neonPulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes neonPulse {
+    from {
+        text-shadow:
+            0 0 10px #ff00ff,
+            0 0 20px #ff00ff,
+            0 0 30px #ff00ff,
+            2px 2px 4px rgba(0, 0, 0, 0.8);
+    }
+    to {
+        text-shadow:
+            0 0 20px #ff00ff,
+            0 0 30px #ff00ff,
+            0 0 40px #ff00ff,
+            2px 2px 4px rgba(0, 0, 0, 0.8);
+    }
+}
+
+h2 {
+    color: #00ffff;
+    font-weight: 700;
+    text-shadow: 0 0 10px #00ffff, 1px 1px 2px rgba(0, 0, 0, 0.8);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+h3 {
+    color: #ff00ff;
+    font-weight: 700;
+    text-shadow: 0 0 5px #ff00ff;
+}
+
+/* Character cards with digital terminal aesthetic */
+.character-card {
+    background: var(--character-bg);
+    border: 2px solid #ff00ff;
+    border-radius: 4px;
+    box-shadow: var(--character-shadow), inset 0 0 20px rgba(255, 0, 255, 0.1);
+    position: relative;
+}
+
+/* Digital glitch effect */
+.character-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        repeating-linear-gradient(
+            90deg,
+            transparent 0px,
+            transparent 2px,
+            rgba(255, 0, 255, 0.05) 2px,
+            rgba(255, 0, 255, 0.05) 4px
+        ),
+        repeating-linear-gradient(
+            0deg,
+            transparent 0px,
+            transparent 2px,
+            rgba(0, 255, 255, 0.05) 2px,
+            rgba(0, 255, 255, 0.05) 4px
+        );
+    pointer-events: none;
+    border-radius: 2px;
+}
+
+.character-card:hover {
+    border-color: #ff00aa;
+    box-shadow: var(--character-hover-shadow), 0 0 30px rgba(255, 0, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+.character-card.completed {
+    background: var(--completed-bg);
+    border-color: #00ffff;
+    color: var(--completed-text);
+    box-shadow: 0 4px 15px rgba(0, 255, 255, 0.4), inset 0 0 20px rgba(0, 255, 255, 0.1);
+}
+
+.character-card.enemy {
+    background: var(--enemy-bg);
+    border-color: #ff0055;
+    color: var(--enemy-text);
+    box-shadow: 0 4px 15px rgba(255, 0, 85, 0.5), inset 0 0 30px rgba(255, 0, 85, 0.1);
+}
+
+/* Enemy cards get glitch effect */
+.character-card.enemy::before {
+    background:
+        repeating-linear-gradient(
+            45deg,
+            rgba(255, 0, 85, 0.1) 0px,
+            rgba(255, 0, 85, 0.1) 2px,
+            transparent 2px,
+            transparent 4px
+        );
+    animation: glitch 0.5s infinite;
+}
+
+@keyframes glitch {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; transform: translateX(1px); }
+}
+
+/* Input styling with terminal feel */
+.input-group input {
+    background: var(--input-bg);
+    border: 2px solid var(--input-border);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-weight: 600;
+    text-shadow: 0 0 5px rgba(255, 0, 255, 0.5);
+}
+
+.input-group input:focus {
+    border-color: var(--input-border-focus);
+    box-shadow: var(--input-focus-shadow);
+    background: #252535;
+}
+
+.input-group input::placeholder {
+    color: #880088;
+    font-style: italic;
+}
+
+/* Buttons with neon hot pink styling */
+.input-group button {
+    background: var(--btn-primary-bg);
+    color: #000000;
+    font-family: var(--font-family);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: 2px solid #ff00aa;
+    box-shadow: 0 4px 8px rgba(255, 0, 255, 0.5), 0 0 15px rgba(255, 0, 255, 0.3);
+}
+
+.input-group button:hover {
+    background: linear-gradient(135deg, #ff44ff 0%, #ff00ff 100%);
+    color: #000000;
+    box-shadow: var(--btn-primary-hover), 0 0 25px rgba(255, 0, 255, 0.6);
+    transform: translateY(-2px);
+}
+
+/* Control buttons */
+.control-btn {
+    font-family: var(--font-family);
+    font-weight: 700;
+    border: 2px solid rgba(255, 0, 255, 0.6);
+    box-shadow: 0 2px 4px rgba(255, 0, 255, 0.4);
+}
+
+.control-btn:hover {
+    box-shadow: 0 4px 8px rgba(255, 0, 255, 0.6), 0 0 10px rgba(255, 0, 255, 0.5);
+    transform: scale(1.1);
+}
+
+/* Large action buttons - cyan and hot pink */
+.complete-btn-large {
+    background: var(--btn-success-bg);
+    border: 3px solid #00aaaa;
+    box-shadow: 0 6px 20px rgba(0, 255, 255, 0.6), 0 0 20px rgba(0, 255, 255, 0.4);
+    font-family: var(--font-family);
+    font-weight: 900;
+    color: #000000;
+}
+
+.complete-btn-large:hover {
+    background: var(--btn-success-hover);
+    box-shadow: 0 8px 25px rgba(0, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.6);
+    transform: scale(1.1);
+}
+
+.return-btn-large {
+    background: var(--btn-info-bg);
+    border: 3px solid #ff00aa;
+    box-shadow: 0 6px 20px rgba(255, 0, 255, 0.6), 0 0 20px rgba(255, 0, 255, 0.4);
+    font-family: var(--font-family);
+    font-weight: 900;
+    color: #000000;
+}
+
+.return-btn-large:hover {
+    background: var(--btn-info-hover);
+    box-shadow: 0 8px 25px rgba(255, 0, 255, 0.8), 0 0 30px rgba(255, 0, 255, 0.6);
+    transform: scale(1.1);
+}
+
+.delete-btn {
+    background: var(--btn-danger-bg);
+    border: 2px solid #aa0044;
+    box-shadow: 0 2px 4px rgba(255, 0, 85, 0.5);
+    color: #ffffff;
+}
+
+.delete-btn:hover {
+    background: var(--btn-danger-hover);
+    box-shadow: 0 4px 8px rgba(255, 0, 85, 0.7), 0 0 15px rgba(255, 0, 85, 0.5);
+    transform: scale(1.1);
+}
+
+/* HP controls */
+.hp-btn {
+    background: var(--control-bg);
+    border: 2px solid rgba(255, 0, 255, 0.6);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-weight: 700;
+}
+
+.hp-btn:hover {
+    background: var(--control-hover);
+    box-shadow: 0 2px 4px rgba(255, 0, 255, 0.5);
+}
+
+.hp-display {
+    background: rgba(255, 0, 255, 0.2);
+    border: 2px solid rgba(255, 0, 255, 0.6);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-weight: 700;
+    text-shadow: 0 0 5px rgba(255, 0, 255, 0.8);
+}
+
+/* Column headers - terminal output */
+.column h2 {
+    color: #00ffff;
+    border-bottom: 3px solid #ff00ff;
+    text-shadow: 0 0 10px #00ffff;
+    font-weight: 900;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+/* Empty state */
+.empty-state {
+    color: #880088;
+    font-style: italic;
+    text-align: center;
+    border: 2px dashed rgba(255, 0, 255, 0.4);
+    background: rgba(10, 10, 15, 0.5);
+}
+
+/* Modal styling - system alert */
+.modal-content {
+    background: var(--card-bg);
+    border: 3px solid #ff00ff;
+    box-shadow: var(--shadow-xl), 0 0 40px rgba(255, 0, 255, 0.5);
+}
+
+.modal-content h2 {
+    color: #ff00ff;
+    font-family: var(--font-family);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    text-shadow: 0 0 15px #ff00ff;
+}
+
+.modal-content button {
+    background: var(--btn-primary-bg);
+    color: #000000;
+    font-family: var(--font-family);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: 2px solid #ff00aa;
+    box-shadow: 0 4px 8px rgba(255, 0, 255, 0.5);
+}
+
+.modal-content button:hover {
+    background: linear-gradient(135deg, #ff44ff 0%, #ff00ff 100%);
+    box-shadow: var(--btn-primary-hover);
+    transform: translateY(-2px);
+}
+
+/* Theme selector */
+.theme-selector {
+    background: rgba(10, 10, 15, 0.95);
+    border: 2px solid #ff00ff;
+    box-shadow: 0 2px 8px rgba(255, 0, 255, 0.5);
+}
+
+.theme-selector label {
+    color: #ff00ff;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-shadow: 0 0 5px #ff00ff;
+}
+
+.theme-selector select {
+    background: #1a1a2e;
+    color: #ff00ff;
+    border: 2px solid #ff00ff;
+    font-family: var(--font-family);
+    font-weight: 600;
+    text-shadow: 0 0 5px rgba(255, 0, 255, 0.5);
+}
+
+.theme-selector select:focus {
+    border-color: #ff00aa;
+    box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2.2rem;
+        letter-spacing: 2px;
+    }
+
+    .character-card {
+        border-width: 2px;
+    }
+
+    .complete-btn-large, .return-btn-large {
+        width: 45px;
+        height: 45px;
+        font-size: 1.3rem;
+        border-width: 2px;
+    }
+}

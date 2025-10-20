@@ -1,0 +1,434 @@
+/* THEME: Pirate Borg */
+
+/* Pirate Borg - Parchment with dark brown text and blood red accents */
+:root {
+    /* Parchment and aged paper backgrounds */
+    --bg-primary: #eee1d3;
+    --bg-secondary: #e8dcc8;
+    --bg-gradient: linear-gradient(135deg, #eee1d3 0%, #e8dcc8 50%, #d4c4a8 100%);
+    --text-primary: #6b5c55;
+    --text-secondary: #241919;
+    --text-muted: #b2916a;
+    --text-inverse: #eee1d3;
+
+    /* Card Colors - Aged parchment with dark borders */
+    --card-bg: rgba(238, 225, 211, 0.95);
+    --card-border: rgba(107, 92, 85, 0.8);
+    --card-shadow: 0 8px 32px rgba(36, 25, 25, 0.3);
+
+    /* Button Colors - Dark brown and blood red */
+    --btn-primary-bg: linear-gradient(135deg, #6b5c55 0%, #241919 100%);
+    --btn-primary-hover: 0 8px 25px rgba(107, 92, 85, 0.4);
+    --btn-success-bg: #6b5c55;
+    --btn-success-hover: #8b7c75;
+    --btn-danger-bg: #dc190d;
+    --btn-danger-hover: #ff3020;
+    --btn-info-bg: #b2916a;
+    --btn-info-hover: #c8a680;
+
+    /* Input Colors */
+    --input-bg: #f4ede0;
+    --input-border: #6b5c55;
+    --input-border-focus: #dc190d;
+    --input-focus-shadow: 0 0 0 3px rgba(220, 25, 13, 0.3);
+
+    /* Character Card Colors */
+    --character-bg: #e8dcc8;
+    --character-border: transparent;
+    --character-shadow: 0 4px 15px rgba(36, 25, 25, 0.25);
+    --character-hover-shadow: 0 8px 25px rgba(36, 25, 25, 0.35);
+    --character-hover-border: #6b5c55;
+
+    /* Completed Character Colors - Faded parchment */
+    --completed-bg: linear-gradient(135deg, #d4c4a8 0%, #c8b89c 100%);
+    --completed-text: #6b5c55;
+
+    /* Enemy Colors - Blood red */
+    --enemy-bg: linear-gradient(135deg, #dc190d 0%, #aa1308 100%);
+    --enemy-text: #eee1d3;
+
+    /* Control Button Colors */
+    --control-bg: rgba(107, 92, 85, 0.2);
+    --control-hover: rgba(107, 92, 85, 0.4);
+
+    /* Typography - Old serif fonts */
+    --font-family: 'Georgia', 'Garamond', 'Times New Roman', serif;
+    --font-family-mono: 'Courier New', 'Monaco', monospace;
+    --font-size-h1: 3rem;
+    --font-size-h2: 1.8rem;
+    --font-size-h3: 1.4rem;
+    --font-size-body: 1rem;
+    --font-size-small: 0.9rem;
+}
+
+/* Pirate Borg specific styling - aged parchment nautical */
+body {
+    background: var(--bg-gradient);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-weight: 400;
+    text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.3);
+    position: relative;
+    /* Vintage nautical chart background */
+    background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/1702_Chatelain_Map_of_the_Caribbean_-_Geographicus_Antilles-chatelain-1719.jpg/1920px-1702_Chatelain_Map_of_the_Caribbean_-_Geographicus_Antilles-chatelain-1719.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+}
+
+/* Parchment overlay to blend map with UI and add aged effect */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* Semi-transparent parchment overlay to make text readable */
+    background: linear-gradient(
+        135deg,
+        rgba(238, 225, 211, 0.75) 0%,
+        rgba(232, 220, 200, 0.70) 50%,
+        rgba(238, 225, 211, 0.75) 100%
+    );
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Paper grain and aging effects over the map */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        /* Aged paper spots and stains */
+        radial-gradient(circle at 20% 30%, rgba(178, 145, 106, 0.12) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(220, 25, 13, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 60% 15%, rgba(107, 92, 85, 0.08) 0%, transparent 35%),
+        /* Paper grain texture */
+        repeating-linear-gradient(
+            90deg,
+            transparent 0px,
+            transparent 1px,
+            rgba(107, 92, 85, 0.04) 1px,
+            rgba(107, 92, 85, 0.04) 2px
+        );
+    pointer-events: none;
+    z-index: 0;
+}
+
+.container {
+    position: relative;
+    z-index: 1;
+}
+
+h1 {
+    color: #241919;
+    font-size: var(--font-size-h1);
+    font-weight: 700;
+    text-shadow: 2px 2px 3px rgba(178, 145, 106, 0.6);
+    letter-spacing: 2px;
+    font-family: var(--font-family);
+}
+
+h2 {
+    color: #dc190d;
+    font-weight: 700;
+    text-shadow: 1px 1px 2px rgba(36, 25, 25, 0.4);
+    letter-spacing: 1px;
+    font-family: var(--font-family);
+}
+
+h3 {
+    color: #6b5c55;
+    font-weight: 700;
+    font-family: var(--font-family);
+}
+
+/* Character cards with aged parchment aesthetic */
+.character-card {
+    background: var(--character-bg);
+    border: 2px solid #6b5c55;
+    border-radius: 8px;
+    box-shadow: var(--character-shadow), inset 0 0 30px rgba(107, 92, 85, 0.1);
+    position: relative;
+}
+
+/* Aged paper texture on cards */
+.character-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        radial-gradient(circle at 30% 40%, rgba(178, 145, 106, 0.1) 0%, transparent 60%),
+        repeating-linear-gradient(
+            90deg,
+            rgba(107, 92, 85, 0.02) 0px,
+            rgba(107, 92, 85, 0.02) 1px,
+            transparent 1px,
+            transparent 3px
+        );
+    pointer-events: none;
+    border-radius: 6px;
+}
+
+.character-card:hover {
+    border-color: #dc190d;
+    box-shadow: var(--character-hover-shadow);
+    transform: translateY(-2px);
+}
+
+.character-card.completed {
+    background: var(--completed-bg);
+    border-color: #b2916a;
+    color: var(--completed-text);
+    box-shadow: 0 4px 15px rgba(107, 92, 85, 0.2);
+    opacity: 0.7;
+}
+
+.character-card.enemy {
+    background: var(--enemy-bg);
+    border-color: #aa1308;
+    color: var(--enemy-text);
+    box-shadow: 0 4px 15px rgba(220, 25, 13, 0.5);
+}
+
+/* Enemy cards get blood stain effect */
+.character-card.enemy::before {
+    background:
+        radial-gradient(circle at 70% 30%, rgba(220, 25, 13, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 30% 70%, rgba(220, 25, 13, 0.15) 0%, transparent 40%);
+}
+
+/* Input styling with aged paper feel */
+.input-group input {
+    background: var(--input-bg);
+    border: 2px solid var(--input-border);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    font-weight: 500;
+}
+
+.input-group input:focus {
+    border-color: var(--input-border-focus);
+    box-shadow: var(--input-focus-shadow);
+    background: #ffffff;
+}
+
+.input-group input::placeholder {
+    color: #a89a80;
+    font-style: italic;
+}
+
+/* Buttons with dark brown styling */
+.input-group button {
+    background: var(--btn-primary-bg);
+    color: #eee1d3;
+    font-family: var(--font-family);
+    font-weight: 700;
+    letter-spacing: 1px;
+    border: 2px solid #241919;
+    box-shadow: 0 4px 8px rgba(36, 25, 25, 0.3);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.input-group button:hover {
+    background: linear-gradient(135deg, #8b7c75 0%, #6b5c55 100%);
+    color: #ffffff;
+    box-shadow: var(--btn-primary-hover);
+    transform: translateY(-2px);
+}
+
+/* Control buttons */
+.control-btn {
+    font-family: var(--font-family);
+    font-weight: 600;
+    border: 2px solid rgba(107, 92, 85, 0.6);
+    box-shadow: 0 2px 4px rgba(36, 25, 25, 0.3);
+}
+
+.control-btn:hover {
+    box-shadow: 0 4px 8px rgba(36, 25, 25, 0.4);
+    transform: scale(1.1);
+}
+
+/* Large action buttons - brown and tan */
+.complete-btn-large {
+    background: var(--btn-success-bg);
+    border: 3px solid #241919;
+    box-shadow: 0 6px 20px rgba(107, 92, 85, 0.4);
+    font-family: var(--font-family);
+    font-weight: 700;
+    color: #eee1d3;
+}
+
+.complete-btn-large:hover {
+    background: var(--btn-success-hover);
+    box-shadow: 0 8px 25px rgba(139, 124, 117, 0.5);
+    transform: scale(1.1);
+}
+
+.return-btn-large {
+    background: var(--btn-info-bg);
+    border: 3px solid #8b7355;
+    box-shadow: 0 6px 20px rgba(178, 145, 106, 0.4);
+    font-family: var(--font-family);
+    font-weight: 700;
+    color: #241919;
+}
+
+.return-btn-large:hover {
+    background: var(--btn-info-hover);
+    box-shadow: 0 8px 25px rgba(200, 166, 128, 0.5);
+    transform: scale(1.1);
+}
+
+.delete-btn {
+    background: var(--btn-danger-bg);
+    border: 2px solid #aa1308;
+    box-shadow: 0 2px 4px rgba(36, 25, 25, 0.3);
+    color: #eee1d3;
+}
+
+.delete-btn:hover {
+    background: var(--btn-danger-hover);
+    box-shadow: 0 4px 8px rgba(220, 25, 13, 0.5);
+    transform: scale(1.1);
+}
+
+/* HP controls */
+.hp-btn {
+    background: var(--control-bg);
+    border: 2px solid rgba(107, 92, 85, 0.6);
+    color: var(--text-primary);
+    font-family: var(--font-family-mono);
+    font-weight: 700;
+}
+
+.hp-btn:hover {
+    background: var(--control-hover);
+    box-shadow: 0 2px 4px rgba(36, 25, 25, 0.3);
+}
+
+.hp-display {
+    background: rgba(244, 237, 224, 0.8);
+    border: 2px solid rgba(107, 92, 85, 0.6);
+    color: var(--text-primary);
+    font-family: var(--font-family-mono);
+    font-weight: 700;
+}
+
+/* Column headers - aged parchment titles */
+.column h2 {
+    color: #dc190d;
+    border-bottom: 3px solid #6b5c55;
+    text-shadow: 1px 1px 2px rgba(178, 145, 106, 0.6);
+    font-weight: 700;
+    letter-spacing: 2px;
+    font-family: var(--font-family);
+}
+
+/* Empty state */
+.empty-state {
+    color: #b2916a;
+    font-style: italic;
+    text-align: center;
+    border: 2px dashed rgba(107, 92, 85, 0.4);
+    background: rgba(244, 237, 224, 0.5);
+    font-family: var(--font-family);
+}
+
+/* Modal styling - aged document */
+.modal-content {
+    background: #eee1d3;
+    border: 4px solid #6b5c55;
+    box-shadow: 0 8px 32px rgba(36, 25, 25, 0.5);
+}
+
+.modal-content h2 {
+    color: #241919;
+    font-family: var(--font-family);
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-shadow: 1px 1px 2px rgba(178, 145, 106, 0.6);
+}
+
+.modal-content button {
+    background: var(--btn-primary-bg);
+    color: #eee1d3;
+    font-family: var(--font-family);
+    font-weight: 700;
+    letter-spacing: 1px;
+    border: 2px solid #241919;
+    box-shadow: 0 4px 8px rgba(36, 25, 25, 0.3);
+}
+
+.modal-content button:hover {
+    background: linear-gradient(135deg, #8b7c75 0%, #6b5c55 100%);
+    box-shadow: var(--btn-primary-hover);
+    transform: translateY(-2px);
+}
+
+/* Theme selector */
+.theme-selector {
+    background: rgba(238, 225, 211, 0.95);
+    border: 2px solid #6b5c55;
+    box-shadow: 0 2px 8px rgba(36, 25, 25, 0.3);
+}
+
+.theme-selector label {
+    color: #241919;
+    font-weight: 700;
+    font-family: var(--font-family);
+}
+
+.theme-selector select {
+    background: #f4ede0;
+    color: #6b5c55;
+    border: 2px solid #6b5c55;
+    font-family: var(--font-family);
+    font-weight: 600;
+}
+
+.theme-selector select:focus {
+    border-color: #dc190d;
+}
+
+/* Character names with classic serif */
+.character-name {
+    font-family: var(--font-family);
+    font-weight: 700;
+}
+
+/* Labels with old style */
+label {
+    font-family: var(--font-family);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2.2rem;
+        letter-spacing: 1px;
+    }
+
+    .character-card {
+        border-width: 2px;
+    }
+
+    .complete-btn-large, .return-btn-large {
+        width: 45px;
+        height: 45px;
+        font-size: 1.3rem;
+        border-width: 2px;
+    }
+}

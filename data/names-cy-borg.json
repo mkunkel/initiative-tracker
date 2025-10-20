@@ -1,0 +1,63 @@
+{
+  "format": "[{prefix} ]{handle|callsign}[ {suffix}]",
+  "prefix": [
+    "Zero",
+    "Prime",
+    "Omega",
+    "Alpha",
+    "Beta",
+    "Delta",
+    "Sigma",
+    "Gamma"
+  ],
+  "handle": [
+    "Razor",
+    "Neon",
+    "Glitch",
+    "Chrome",
+    "Spike",
+    "Blade",
+    "Echo",
+    "Volt",
+    "Nova",
+    "Byte",
+    "Ghost",
+    "Axe",
+    "Pulse",
+    "Vex",
+    "Cipher",
+    "Hack",
+    "Rogue",
+    "Flux",
+    "Edge",
+    "Wire"
+  ],
+  "callsign": [
+    "Crash",
+    "Loop",
+    "Trace",
+    "Switch",
+    "Node",
+    "Pixel",
+    "Vector",
+    "Matrix",
+    "Daemon",
+    "Kernel",
+    "Circuit",
+    "Binary"
+  ],
+  "suffix": [
+    "2077",
+    "X",
+    "Prime",
+    "Zero",
+    "Max",
+    "Core",
+    "Nine",
+    "Red",
+    "Black",
+    "V",
+    "Omega",
+    "Beta"
+  ]
+}

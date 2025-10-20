@@ -1,0 +1,26 @@
+I want you to create a static, single page application that will serve as an RPG initiative tracker.
+
+At the top of the page, there will be a text input field and a submit button. The text input field will be for the name of the character. There should also be an input field for the character's hit points, which will default to "5". The submit button will be for adding the character to the initiative tracker.
+The tracker itself will be two columns. The left column will be "On Deck" and the right column will be "Completed".
+When a character is added to the tracker, it will be added to the "On Deck" column at the bottom of the column. The input field will be cleared after the character is added.
+Each character will be listed as a large rectangular button with the name of the character on it. The hit points will be displayed as a number in a small box next to the character's name, with up and down arrows to increment or decrement the hit points.
+There should also be small up and down arrows next to the character's button. The up arrow will move the character up one space in the "On Deck" column. The down arrow will move the character down one space in the "On Deck" column.
+The top character should not have an up arrow. The bottom character should not have a down arrow.
+When a character is moved up or down, the other characters should be shifted accordingly.
+Clicking on a character's button will move it to the "Completed" column.
+When all characters are moved to the "Completed" column, the "On Deck" column should be empty. There should be a modal with a button that notifies the user that the round is over.
+The button in the modal should be "Start Next Round". Clicking this button will clear the "Completed" column and move all characters back to the "On Deck" column.
+The modal should be hidden by default. It should only be visible when all characters are moved to the "Completed" column.
+All characters should also have a small trash icon next to them. Clicking this icon will remove the character from the tracker after confirmation.
+There should also be a button at the top of the page to add an enemy to the tracker. The enemy will be added to an enemies list at the bottom of the "On Deck" column. There will be an input box for the enemy's name, an input box for the enemy's hit points, and a submit button. The submit button will add the enemy to the enemies list. The input boxes will be cleared after the enemy is added. The enemy name input box will default to "Enemy 1", the enemy hit points input box will default to "5", and the submit button will default to "Add Enemy". The default enemy name will increment by 1 for each new enemy added.
+The enemies list will be displayed and behave the same way as the characters list.
+
+The tracker should be styled with a modern, minimalistic design.
+The tracker should be responsive and work on both desktop and mobile devices.
+The tracker should be built using HTML, CSS, and JavaScript.
+The tracker should be easy to use and understand.
+The tracker should be fast and responsive.
+The tracker should be secure and reliable.
+The tracker should be compatible with all modern browsers.
+The tracker should be compatible with all modern devices.
+The tracker should be designed in a way that is easy to adjust any aspect of the styling.

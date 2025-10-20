@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPG Initiative Tracker</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Theme Selector and Clear Button -->
+    <div class="top-controls">
+        <button id="clearAll" class="clear-btn-top">Clear All</button>
+        <div class="theme-selector">
+            <label for="themeSelect">Theme:</label>
+            <select id="themeSelect">
+                <option value="default">Default</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>RPG Initiative Tracker</h1>
+
+            <!-- Character Input Section -->
+            <div class="input-section">
+                <div class="character-input">
+                    <h2>Add Character</h2>
+                    <div class="input-group">
+                        <div class="input-field input-field-with-button">
+                            <label for="characterName">Character Name</label>
+                            <div class="input-with-refresh">
+                                <span id="refreshName" class="refresh-icon" title="Generate new name">🔄</span>
+                                <input type="text" id="characterName" placeholder="Enter character name" required>
+                            </div>
+                        </div>
+                        <div class="input-field input-field-hp">
+                            <label for="characterHP">Hit Points</label>
+                            <input type="number" id="characterHP" placeholder="5" value="5" min="1" required>
+                        </div>
+                        <button id="addCharacter">Add Character</button>
+                    </div>
+                </div>
+
+                <div class="enemy-input">
+                    <h2>Add Enemy</h2>
+                    <div class="input-group">
+                        <div class="input-field">
+                            <label for="enemyName">Enemy Name</label>
+                            <input type="text" id="enemyName" placeholder="Enter enemy name" value="Enemy 1">
+                        </div>
+                        <div class="input-field input-field-hp">
+                            <label for="enemyHP">Hit Points</label>
+                            <input type="number" id="enemyHP" placeholder="5" value="5" min="1" required>
+                        </div>
+                        <button id="addEnemy">Add Enemy</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div class="tracker-container">
+                <!-- On Deck Column -->
+                <div class="column" id="onDeck">
+                    <h2>On Deck</h2>
+                    <div class="character-list" id="onDeckList">
+                        <!-- Characters will be added here -->
+                    </div>
+                </div>
+
+                <!-- Completed Column -->
+                <div class="column" id="completed">
+                    <h2>Completed</h2>
+                    <div class="character-list" id="completedList">
+                        <!-- Completed characters will be added here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stunned and Dead Sections -->
+            <div class="status-container">
+                <!-- Stunned Column -->
+                <div class="column status-column" id="stunned">
+                    <h2>Stunned</h2>
+                    <div class="character-list" id="stunnedList">
+                        <!-- Stunned characters will be added here -->
+                    </div>
+                </div>
+
+                <!-- Dead Column -->
+                <div class="column status-column" id="dead">
+                    <h2>Dead</h2>
+                    <div class="character-list" id="deadList">
+                        <!-- Dead characters will be added here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Round Complete Modal -->
+        <div class="modal" id="roundCompleteModal">
+            <div class="modal-content">
+                <h2>Round Complete!</h2>
+                <p>All characters have completed their turns.</p>
+                <button id="startNextRound">Start Next Round</button>
+            </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div class="modal" id="deleteModal">
+            <div class="modal-content">
+                <h2>Confirm Delete</h2>
+                <p>Are you sure you want to remove this character?</p>
+                <div class="modal-buttons">
+                    <button id="confirmDelete">Yes, Delete</button>
+                    <button id="cancelDelete">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stun Rounds Modal -->
+        <div class="modal" id="stunModal">
+            <div class="modal-content">
+                <h2>Stun Duration</h2>
+                <p>How many rounds should this character be stunned?</p>
+                <div class="stun-counter">
+                    <button id="stunDecrease" class="stun-btn">−</button>
+                    <div id="stunRoundsDisplay" class="stun-display">1</div>
+                    <button id="stunIncrease" class="stun-btn">+</button>
+                </div>
+                <div class="modal-buttons">
+                    <button id="confirmStun">Confirm</button>
+                    <button id="cancelStun">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/script.js"></script>
+</body>
+</html>

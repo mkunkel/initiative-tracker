@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Initiative Tracker Test Suite</title>
+
+    <!-- Test Framework -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mocha/10.2.0/mocha.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/10.2.0/mocha.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chai/4.3.7/chai.min.js"></script>
+
+    <!-- Test Styles -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .test-header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .test-header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2rem;
+        }
+
+        .test-header p {
+            margin: 0;
+            opacity: 0.8;
+        }
+
+        .test-controls {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .test-controls button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            font-size: 14px;
+        }
+
+        .test-controls button:hover {
+            background: #2980b9;
+        }
+
+        .test-controls button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        #mocha {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .test-summary {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .test-summary h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+
+        .coverage-info {
+            background: #ecf0f1;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <h1>🧪 Initiative Tracker Test Suite</h1>
+        <p>Comprehensive testing for RPG Initiative Tracker application</p>
+    </div>
+
+    <div class="test-controls">
+        <button id="runAllTests">Run All Tests</button>
+        <button id="runUnitTests">Run Unit Tests</button>
+        <button id="runIntegrationTests">Run Integration Tests</button>
+        <button id="runThemeTests">Run Theme Tests</button>
+        <button id="clearResults">Clear Results</button>
+    </div>
+
+    <div id="mocha"></div>
+
+    <div class="test-summary">
+        <h3>Test Summary</h3>
+        <div id="testSummary">
+            <p>Click "Run All Tests" to start testing</p>
+        </div>
+        <div class="coverage-info">
+            <strong>Coverage Areas:</strong><br>
+            • Character Management (Add, Delete, Complete)<br>
+            • Enemy Management (Add, Auto-naming)<br>
+            • Initiative Ordering (Move Up/Down)<br>
+            • HP Management (Increment/Decrement)<br>
+            • Round Management (Complete, Next Round)<br>
+            • Theme System (Discovery, Switching, Persistence)<br>
+            • UI Interactions (Modals, Forms, Buttons)<br>
+            • Data Persistence (LocalStorage)
+        </div>
+    </div>
+
+    <script>
+        // Configure Mocha
+        mocha.setup('bdd');
+
+        // Make Chai available globally
+        window.expect = chai.expect;
+        window.assert = chai.assert;
+
+        // Test state management
+        window.testState = {
+            tracker: null,
+            originalLocalStorage: {},
+            testResults: {
+                total: 0,
+                passed: 0,
+                failed: 0,
+                skipped: 0
+            }
+        };
+
+        // Test control functions
+        document.getElementById('runAllTests').addEventListener('click', () => {
+            clearResults();
+            runTestSuite('all');
+        });
+
+        document.getElementById('runUnitTests').addEventListener('click', () => {
+            clearResults();
+            runTestSuite('unit');
+        });
+
+        document.getElementById('runIntegrationTests').addEventListener('click', () => {
+            clearResults();
+            runTestSuite('integration');
+        });
+
+        document.getElementById('runThemeTests').addEventListener('click', () => {
+            clearResults();
+            runTestSuite('theme');
+        });
+
+        document.getElementById('clearResults').addEventListener('click', clearResults);
+
+        function clearResults() {
+            const mochaDiv = document.getElementById('mocha');
+            mochaDiv.innerHTML = '';
+            document.getElementById('testSummary').innerHTML = '<p>Click "Run All Tests" to start testing</p>';
+            window.testState.testResults = { total: 0, passed: 0, failed: 0, skipped: 0 };
+        }
+
+        function runTestSuite(type) {
+            // Load the main application script
+            const script = document.createElement('script');
+            script.src = '../script.js';
+            script.onload = () => {
+                // Load test files based on type
+                const testFiles = getTestFiles(type);
+                loadTestFiles(testFiles, () => {
+                    // Run the tests
+                    mocha.run((failures) => {
+                        updateTestSummary(failures);
+                    });
+                });
+            };
+            document.head.appendChild(script);
+        }
+
+        function getTestFiles(type) {
+            const allTests = [
+                'unit-tests.js',
+                'integration-tests.js',
+                'theme-tests.js',
+                'ui-tests.js',
+                'data-tests.js'
+            ];
+
+            switch(type) {
+                case 'unit': return ['unit-tests.js'];
+                case 'integration': return ['integration-tests.js', 'ui-tests.js'];
+                case 'theme': return ['theme-tests.js'];
+                default: return allTests;
+            }
+        }
+
+        function loadTestFiles(files, callback) {
+            let loaded = 0;
+            files.forEach(file => {
+                const script = document.createElement('script');
+                script.src = file;
+                script.onload = () => {
+                    loaded++;
+                    if (loaded === files.length) {
+                        callback();
+                    }
+                };
+                script.onerror = () => {
+                    console.warn(`Failed to load test file: ${file}`);
+                    loaded++;
+                    if (loaded === files.length) {
+                        callback();
+                    }
+                };
+                document.head.appendChild(script);
+            });
+        }
+
+        function updateTestSummary(failures) {
+            const stats = mocha.stats;
+            const summary = document.getElementById('testSummary');
+
+            window.testState.testResults = {
+                total: stats.tests,
+                passed: stats.passes,
+                failed: stats.failures,
+                skipped: stats.pending
+            };
+
+            const passRate = stats.tests > 0 ? Math.round((stats.passes / stats.tests) * 100) : 0;
+            const statusColor = failures === 0 ? '#27ae60' : '#e74c3c';
+
+            summary.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span style="font-size: 1.2em; font-weight: bold; color: ${statusColor};">
+                        ${failures === 0 ? '✅ All Tests Passed!' : '❌ Some Tests Failed'}
+                    </span>
+                    <span style="font-size: 1.1em; color: #2c3e50;">
+                        Pass Rate: ${passRate}%
+                    </span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; text-align: center;">
+                    <div style="background: #ecf0f1; padding: 10px; border-radius: 4px;">
+                        <div style="font-size: 1.5em; font-weight: bold; color: #2c3e50;">${stats.tests}</div>
+                        <div style="font-size: 0.9em; color: #7f8c8d;">Total</div>
+                    </div>
+                    <div style="background: #d5f4e6; padding: 10px; border-radius: 4px;">
+                        <div style="font-size: 1.5em; font-weight: bold; color: #27ae60;">${stats.passes}</div>
+                        <div style="font-size: 0.9em; color: #7f8c8d;">Passed</div>
+                    </div>
+                    <div style="background: #fadbd8; padding: 10px; border-radius: 4px;">
+                        <div style="font-size: 1.5em; font-weight: bold; color: #e74c3c;">${stats.failures}</div>
+                        <div style="font-size: 0.9em; color: #7f8c8d;">Failed</div>
+                    </div>
+                    <div style="background: #fef9e7; padding: 10px; border-radius: 4px;">
+                        <div style="font-size: 1.5em; font-weight: bold; color: #f39c12;">${stats.pending}</div>
+                        <div style="font-size: 0.9em; color: #7f8c8d;">Skipped</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Initialize
+        console.log('Test runner initialized. Ready to run tests.');
+    </script>
+</body>
+</html>

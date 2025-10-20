@@ -1,0 +1,479 @@
+/* THEME: Eat the Reich */
+
+/* Eat the Reich - Vibrant comic book style with hot pink, cyan, and deep blues */
+:root {
+    /* Dark blue base with vibrant accents */
+    --bg-primary: #11254a;
+    --bg-secondary: #0e486e;
+    --bg-gradient: linear-gradient(135deg, #11254a 0%, #0e486e 50%, #11254a 100%);
+    --text-primary: #ef4796;
+    --text-secondary: #19afd0;
+    --text-muted: #4e718f;
+    --text-inverse: #11254a;
+
+    /* Card Colors - Deep navy with hot pink accents */
+    --card-bg: rgba(17, 37, 74, 0.95);
+    --card-border: rgba(239, 71, 150, 0.8);
+    --card-shadow: 0 8px 32px rgba(221, 23, 105, 0.4);
+
+    /* Button Colors - Hot pink and cyan */
+    --btn-primary-bg: linear-gradient(135deg, #ef4796 0%, #dd1769 100%);
+    --btn-primary-hover: 0 8px 25px rgba(239, 71, 150, 0.6);
+    --btn-success-bg: #19afd0;
+    --btn-success-hover: #2dc4e0;
+    --btn-danger-bg: #dd1769;
+    --btn-danger-hover: #ef4796;
+    --btn-info-bg: #19afd0;
+    --btn-info-hover: #2dc4e0;
+
+    /* Input Colors */
+    --input-bg: #0e486e;
+    --input-border: #ef4796;
+    --input-border-focus: #19afd0;
+    --input-focus-shadow: 0 0 0 3px rgba(239, 71, 150, 0.4);
+
+    /* Character Card Colors */
+    --character-bg: #0e486e;
+    --character-border: transparent;
+    --character-shadow: 0 4px 15px rgba(221, 23, 105, 0.4);
+    --character-hover-shadow: 0 8px 25px rgba(239, 71, 150, 0.5);
+    --character-hover-border: #ef4796;
+
+    /* Completed Character Colors - Muted steel */
+    --completed-bg: linear-gradient(135deg, #4e718f 0%, #3a5570 100%);
+    --completed-text: #b0c4d8;
+
+    /* Enemy Colors - Magenta threat */
+    --enemy-bg: linear-gradient(135deg, #5a1a3e 0%, #7a2050 100%);
+    --enemy-text: #ef4796;
+
+    /* Control Button Colors */
+    --control-bg: rgba(239, 71, 150, 0.2);
+    --control-hover: rgba(239, 71, 150, 0.4);
+
+    /* Typography - Bold, comic book style */
+    --font-family: 'Impact', 'Arial Black', 'Helvetica', sans-serif;
+    --font-family-mono: 'Courier New', 'Monaco', monospace;
+    --font-size-h1: 3rem;
+    --font-size-h2: 1.8rem;
+    --font-size-h3: 1.4rem;
+    --font-size-body: 1rem;
+    --font-size-small: 0.9rem;
+}
+
+/* Eat the Reich specific styling - vibrant comic book */
+body {
+    background: var(--bg-gradient);
+    color: var(--text-primary);
+    font-family: var(--font-family-mono);
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(239, 71, 150, 0.5), 2px 2px 4px rgba(0, 0, 0, 0.8);
+    position: relative;
+}
+
+/* Comic book halftone dots */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        radial-gradient(circle, rgba(239, 71, 150, 0.1) 1px, transparent 1px),
+        radial-gradient(circle, rgba(25, 175, 208, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px, 30px 30px;
+    background-position: 0 0, 10px 10px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Vibrant accent lines */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        linear-gradient(45deg, transparent 48%, rgba(239, 71, 150, 0.05) 48%, rgba(239, 71, 150, 0.05) 52%, transparent 52%),
+        linear-gradient(-45deg, transparent 48%, rgba(25, 175, 208, 0.05) 48%, rgba(25, 175, 208, 0.05) 52%, transparent 52%);
+    background-size: 80px 80px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.container {
+    position: relative;
+    z-index: 1;
+}
+
+h1 {
+    color: #ef4796;
+    font-size: var(--font-size-h1);
+    font-weight: 900;
+    font-family: var(--font-family);
+    text-shadow:
+        0 0 20px #ef4796,
+        3px 3px 0px #19afd0,
+        5px 5px 0px #11254a,
+        7px 7px 15px rgba(0, 0, 0, 0.8);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+h2 {
+    color: #19afd0;
+    font-weight: 900;
+    font-family: var(--font-family);
+    text-shadow: 0 0 10px #19afd0, 2px 2px 0px #11254a, 3px 3px 6px rgba(0, 0, 0, 0.9);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+h3 {
+    color: #ef4796;
+    font-weight: 900;
+    font-family: var(--font-family);
+    text-shadow: 0 0 10px #ef4796, 1px 1px 0px #11254a, 2px 2px 4px rgba(0, 0, 0, 0.9);
+}
+
+/* Character cards with comic book aesthetic */
+.character-card {
+    background: var(--character-bg);
+    border: 3px solid #ef4796;
+    border-radius: 4px;
+    box-shadow: var(--character-shadow), inset 0 0 40px rgba(239, 71, 150, 0.15);
+    position: relative;
+}
+
+/* Comic book energy lines */
+.character-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+        linear-gradient(135deg, transparent 40%, rgba(239, 71, 150, 0.1) 50%, transparent 60%),
+        repeating-linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(25, 175, 208, 0.05) 50%,
+            transparent 100%
+        );
+    background-size: 100% 100%, 40px 40px;
+    pointer-events: none;
+    border-radius: 2px;
+}
+
+/* Bold star burst icon */
+.character-card::after {
+    content: '★';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 2.5rem;
+    opacity: 0.1;
+    color: #ef4796;
+    pointer-events: none;
+    transform: rotate(-15deg);
+    text-shadow: 0 0 10px #ef4796;
+}
+
+.character-card:hover {
+    border-color: #19afd0;
+    box-shadow: var(--character-hover-shadow), 0 0 30px rgba(239, 71, 150, 0.6), 0 0 40px rgba(25, 175, 208, 0.3);
+    transform: translateY(-3px);
+}
+
+.character-card.completed {
+    background: var(--completed-bg);
+    border-color: #4e718f;
+    color: var(--completed-text);
+    box-shadow: 0 4px 15px rgba(78, 113, 143, 0.4);
+    opacity: 0.6;
+}
+
+.character-card.completed::after {
+    content: '✓';
+    opacity: 0.15;
+    color: #b0c4d8;
+}
+
+.character-card.enemy {
+    background: var(--enemy-bg);
+    border-color: #dd1769;
+    color: var(--enemy-text);
+    box-shadow: 0 4px 15px rgba(221, 23, 105, 0.6), inset 0 0 50px rgba(122, 32, 80, 0.3);
+}
+
+/* Enemy cards get danger symbol */
+.character-card.enemy::after {
+    content: '⚡';
+    opacity: 0.15;
+    color: #dd1769;
+    font-size: 3rem;
+    text-shadow: 0 0 15px #dd1769;
+}
+
+.character-card.enemy::before {
+    background:
+        linear-gradient(135deg, transparent 40%, rgba(221, 23, 105, 0.15) 50%, transparent 60%),
+        repeating-linear-gradient(
+            45deg,
+            rgba(239, 71, 150, 0.1) 0px,
+            rgba(239, 71, 150, 0.1) 3px,
+            transparent 3px,
+            transparent 6px
+        );
+}
+
+/* Input styling with vibrant feel */
+.input-group input {
+    background: var(--input-bg);
+    border: 3px solid var(--input-border);
+    color: #19afd0;
+    font-family: var(--font-family-mono);
+    font-weight: 700;
+}
+
+.input-group input:focus {
+    border-color: var(--input-border-focus);
+    box-shadow: var(--input-focus-shadow), 0 0 20px rgba(25, 175, 208, 0.5);
+    background: #1a5a7e;
+}
+
+.input-group input::placeholder {
+    color: #4e718f;
+    font-style: italic;
+}
+
+/* Buttons with hot pink/cyan styling */
+.input-group button {
+    background: var(--btn-primary-bg);
+    color: #ffffff;
+    font-family: var(--font-family);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border: 3px solid #dd1769;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(239, 71, 150, 0.5);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.input-group button:hover {
+    background: linear-gradient(135deg, #ff5aa6 0%, #ef4796 100%);
+    color: #ffffff;
+    box-shadow: var(--btn-primary-hover), 0 0 30px rgba(239, 71, 150, 0.7);
+    transform: translateY(-3px);
+}
+
+/* Control buttons */
+.control-btn {
+    font-family: var(--font-family-mono);
+    font-weight: 700;
+    border: 2px solid rgba(239, 71, 150, 0.8);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.control-btn:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.9), 0 0 15px rgba(239, 71, 150, 0.6);
+    transform: scale(1.15);
+    border-color: #19afd0;
+}
+
+/* Large action buttons - cyan energy */
+.complete-btn-large {
+    background: var(--btn-success-bg);
+    border: 4px solid #0e7a9f;
+    box-shadow: 0 6px 20px rgba(25, 175, 208, 0.7), 0 0 25px rgba(25, 175, 208, 0.4);
+    font-family: var(--font-family);
+    font-weight: 900;
+    color: #11254a;
+}
+
+.complete-btn-large:hover {
+    background: var(--btn-success-hover);
+    box-shadow: 0 8px 25px rgba(45, 196, 224, 0.9), 0 0 35px rgba(25, 175, 208, 0.6);
+    transform: scale(1.15);
+}
+
+.return-btn-large {
+    background: var(--btn-info-bg);
+    border: 4px solid #0e7a9f;
+    box-shadow: 0 6px 20px rgba(25, 175, 208, 0.7), 0 0 25px rgba(25, 175, 208, 0.4);
+    font-family: var(--font-family);
+    font-weight: 900;
+    color: #11254a;
+}
+
+.return-btn-large:hover {
+    background: var(--btn-info-hover);
+    box-shadow: 0 8px 25px rgba(45, 196, 224, 0.9), 0 0 35px rgba(25, 175, 208, 0.6);
+    transform: scale(1.15);
+}
+
+.delete-btn {
+    background: var(--btn-danger-bg);
+    border: 2px solid #aa1050;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    color: #ffffff;
+}
+
+.delete-btn:hover {
+    background: var(--btn-danger-hover);
+    box-shadow: 0 4px 8px rgba(221, 23, 105, 0.8), 0 0 15px rgba(239, 71, 150, 0.5);
+    transform: scale(1.15);
+}
+
+/* HP controls */
+.hp-btn {
+    background: var(--control-bg);
+    border: 2px solid rgba(239, 71, 150, 0.8);
+    color: #ef4796;
+    font-family: var(--font-family-mono);
+    font-weight: 700;
+}
+
+.hp-btn:hover {
+    background: var(--control-hover);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.8), 0 0 10px rgba(239, 71, 150, 0.5);
+}
+
+.hp-display {
+    background: rgba(239, 71, 150, 0.2);
+    border: 2px solid rgba(239, 71, 150, 0.8);
+    color: #ef4796;
+    font-family: var(--font-family-mono);
+    font-weight: 700;
+    text-shadow: 0 0 5px rgba(239, 71, 150, 0.8);
+}
+
+/* Column headers - comic book style */
+.column h2 {
+    color: #19afd0;
+    border-bottom: 4px solid #ef4796;
+    text-shadow: 0 0 15px #19afd0, 2px 2px 0px #11254a, 3px 3px 6px rgba(0, 0, 0, 0.9);
+    font-weight: 900;
+    font-family: var(--font-family);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    position: relative;
+}
+
+/* Power star icon */
+.column h2::before {
+    content: '⚡';
+    color: #ef4796;
+    margin-right: 10px;
+    font-size: 1.3em;
+    text-shadow: 0 0 10px #ef4796, 1px 1px 2px #11254a;
+}
+
+/* Empty state */
+.empty-state {
+    color: #4e718f;
+    font-style: italic;
+    text-align: center;
+    border: 3px dashed rgba(239, 71, 150, 0.5);
+    background: rgba(14, 72, 110, 0.5);
+    font-family: var(--font-family-mono);
+}
+
+/* Modal styling - bold comic panel */
+.modal-content {
+    background: #0e486e;
+    border: 5px solid #ef4796;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.9), 0 0 50px rgba(239, 71, 150, 0.6), 0 0 40px rgba(25, 175, 208, 0.3);
+}
+
+.modal-content h2 {
+    color: #ef4796;
+    font-family: var(--font-family);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    text-shadow: 0 0 20px #ef4796, 2px 2px 0px #19afd0, 3px 3px 6px rgba(0, 0, 0, 0.9);
+}
+
+.modal-content button {
+    background: var(--btn-primary-bg);
+    color: #ffffff;
+    font-family: var(--font-family);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border: 3px solid #dd1769;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(239, 71, 150, 0.5);
+}
+
+.modal-content button:hover {
+    background: linear-gradient(135deg, #ff5aa6 0%, #ef4796 100%);
+    box-shadow: var(--btn-primary-hover);
+    transform: translateY(-2px);
+}
+
+/* Theme selector */
+.theme-selector {
+    background: rgba(14, 72, 110, 0.95);
+    border: 3px solid #ef4796;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.9), 0 0 20px rgba(239, 71, 150, 0.3);
+}
+
+.theme-selector label {
+    color: #19afd0;
+    font-weight: 900;
+    font-family: var(--font-family);
+    text-transform: uppercase;
+    text-shadow: 0 0 10px #19afd0, 1px 1px 2px #11254a;
+}
+
+.theme-selector select {
+    background: #0e486e;
+    color: #ef4796;
+    border: 3px solid #ef4796;
+    font-family: var(--font-family-mono);
+    font-weight: 700;
+}
+
+.theme-selector select:focus {
+    border-color: #19afd0;
+    box-shadow: 0 0 20px rgba(25, 175, 208, 0.5);
+}
+
+/* Character names with bold comic style */
+.character-name {
+    font-family: var(--font-family);
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+/* Labels with comic boldness */
+label {
+    font-family: var(--font-family);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2.2rem;
+        letter-spacing: 2px;
+    }
+
+    .character-card {
+        border-width: 2px;
+    }
+
+    .complete-btn-large, .return-btn-large {
+        width: 45px;
+        height: 45px;
+        font-size: 1.3rem;
+        border-width: 3px;
+    }
+}

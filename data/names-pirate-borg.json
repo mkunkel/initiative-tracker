@@ -1,0 +1,51 @@
+{
+  "format": "{epithet|title} {firstName}",
+  "epithet": [
+    "Blackheart",
+    "Scurvy",
+    "Dead-Eye",
+    "Bloody",
+    "One-Eyed",
+    "Cutlass",
+    "Barnacle",
+    "Storm",
+    "Ironhook",
+    "Shark-Bite",
+    "Cannonball",
+    "Mutiny"
+  ],
+  "title": [
+    "Captain",
+    "Admiral",
+    "Commodore",
+    "Bosun",
+    "Quartermaster",
+    "Buccaneer"
+  ],
+  "firstName": [
+    "Bill",
+    "Jane",
+    "Jack",
+    "Mary",
+    "Pete",
+    "Kate",
+    "Bob",
+    "Sarah",
+    "Tom",
+    "Sam",
+    "Clyde",
+    "Mae",
+    "Paul",
+    "Roger",
+    "Kylie",
+    "Mike",
+    "Tess",
+    "Cruz",
+    "Sal",
+    "Bess",
+    "Anne",
+    "Jim",
+    "Morgan",
+    "Kidd"
+  ]
+}

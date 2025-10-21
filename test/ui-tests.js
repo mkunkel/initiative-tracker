@@ -46,9 +46,33 @@ class InitiativeTracker {
         modal.style.display = 'none';
     }
 
-    addCharacter() {
-        const name = this.characterNameInput ? this.characterNameInput.value.trim() : 'Test Character';
-        const hp = this.characterHPInput ? parseInt(this.characterHPInput.value) : 10;
+    openAddCharacterModal() {
+        if (this.addCharacterModal) {
+            this.showModal(this.addCharacterModal);
+        }
+    }
+
+    closeAddCharacterModal() {
+        if (this.addCharacterModal) {
+            this.hideModal(this.addCharacterModal);
+        }
+    }
+
+    openAddEnemyModal() {
+        if (this.addEnemyModal) {
+            this.showModal(this.addEnemyModal);
+        }
+    }
+
+    closeAddEnemyModal() {
+        if (this.addEnemyModal) {
+            this.hideModal(this.addEnemyModal);
+        }
+    }
+
+    addCharacterFromModal() {
+        const name = this.modalCharacterNameInput ? this.modalCharacterNameInput.value.trim() : 'Test Character';
+        const hp = this.modalCharacterHPInput ? parseInt(this.modalCharacterHPInput.textContent) : 10;
 
         if (!name || isNaN(hp) || hp < 1) {
             return;
@@ -58,15 +82,17 @@ class InitiativeTracker {
             id: Date.now() + Math.random(),
             name: name,
             hp: hp,
+            maxHP: hp,
             isEnemy: false,
             completed: false
         };
         this.characters.push(character);
+        this.closeAddCharacterModal();
     }
 
-    addEnemy() {
-        const name = this.enemyNameInput ? this.enemyNameInput.value.trim() : 'Test Enemy';
-        const hp = this.enemyHPInput ? parseInt(this.enemyHPInput.value) : 8;
+    addEnemyFromModal() {
+        const name = this.modalEnemyNameInput ? this.modalEnemyNameInput.value.trim() : 'Test Enemy';
+        const hp = this.modalEnemyHPInput ? parseInt(this.modalEnemyHPInput.textContent) : 8;
 
         if (!name || isNaN(hp) || hp < 1) {
             return;
@@ -76,10 +102,12 @@ class InitiativeTracker {
             id: Date.now() + Math.random(),
             name: name,
             hp: hp,
+            maxHP: hp,
             isEnemy: true,
             completed: false
         };
         this.characters.push(enemy);
+        this.closeAddEnemyModal();
     }
 
     renderCharacters() {
@@ -110,20 +138,20 @@ describe('InitiativeTracker - UI Tests', function() {
     beforeEach(function() {
         // Create comprehensive mock DOM
         mockDOM = {
-            characterName: {
+            modalCharacterName: {
                 value: 'Test Character',
                 addEventListener: function() {}
             },
-            characterHP: {
-                value: '10',
+            modalCharacterHP: {
+                textContent: '10',
                 addEventListener: function() {}
             },
-            enemyName: {
+            modalEnemyName: {
                 value: 'Test Enemy',
                 addEventListener: function() {}
             },
-            enemyHP: {
-                value: '8',
+            modalEnemyHP: {
+                textContent: '8',
                 addEventListener: function() {}
             },
             onDeckList: {
@@ -132,6 +160,16 @@ describe('InitiativeTracker - UI Tests', function() {
                 querySelectorAll: function() { return []; }
             },
             completedList: {
+                innerHTML: '',
+                appendChild: function() {},
+                querySelectorAll: function() { return []; }
+            },
+            stunnedList: {
+                innerHTML: '',
+                appendChild: function() {},
+                querySelectorAll: function() { return []; }
+            },
+            deadList: {
                 innerHTML: '',
                 appendChild: function() {},
                 querySelectorAll: function() { return []; }
@@ -146,6 +184,14 @@ describe('InitiativeTracker - UI Tests', function() {
                 addEventListener: function() {}
             },
             deleteModal: {
+                style: { display: 'none' },
+                addEventListener: function() {}
+            },
+            addCharacterModal: {
+                style: { display: 'none' },
+                addEventListener: function() {}
+            },
+            addEnemyModal: {
                 style: { display: 'none' },
                 addEventListener: function() {}
             }
@@ -274,26 +320,29 @@ describe('InitiativeTracker - UI Tests', function() {
     });
 
     describe('Event Handling', function() {
-        it('should handle character addition events', function() {
+        it('should handle character addition events from modal', function() {
             // Arrange
-            tracker.characterNameInput = { value: 'New Character' };
-            tracker.characterHPInput = { value: '12' };
+            tracker.modalCharacterNameInput = { value: 'New Character' };
+            tracker.modalCharacterHPInput = { textContent: '12' };
+            tracker.addCharacterModal = mockDOM.addCharacterModal;
 
             // Act
-            tracker.addCharacter();
+            tracker.addCharacterFromModal();
 
             // Assert
             expect(tracker.characters).to.have.length(1);
             expect(tracker.characters[0].name).to.equal('New Character');
+            expect(tracker.characters[0].hp).to.equal(12);
         });
 
-        it('should handle enemy addition events', function() {
+        it('should handle enemy addition events from modal', function() {
             // Arrange
-            tracker.enemyNameInput = { value: 'New Enemy' };
-            tracker.enemyHPInput = { value: '7' };
+            tracker.modalEnemyNameInput = { value: 'New Enemy' };
+            tracker.modalEnemyHPInput = { textContent: '7' };
+            tracker.addEnemyModal = mockDOM.addEnemyModal;
 
             // Act
-            tracker.addEnemy();
+            tracker.addEnemyFromModal();
 
             // Assert
             expect(tracker.characters).to.have.length(1);
@@ -303,11 +352,12 @@ describe('InitiativeTracker - UI Tests', function() {
 
         it('should handle keyboard events for character input', function() {
             // Arrange
-            tracker.characterNameInput = { value: 'Keyboard Character' };
-            tracker.characterHPInput = { value: '14' };
+            tracker.modalCharacterNameInput = { value: 'Keyboard Character' };
+            tracker.modalCharacterHPInput = { textContent: '14' };
+            tracker.addCharacterModal = mockDOM.addCharacterModal;
 
-            // Act - Simulate Enter key press (just call addCharacter directly)
-            tracker.addCharacter();
+            // Act - Simulate Enter key press (just call addCharacterFromModal directly)
+            tracker.addCharacterFromModal();
 
             // Assert
             expect(tracker.characters).to.have.length(1);
@@ -386,46 +436,139 @@ describe('InitiativeTracker - UI Tests', function() {
             // Assert
             expect(modal.style.display).to.equal('none');
         });
+
+        it('should open add character modal', function() {
+            // Arrange
+            tracker.addCharacterModal = mockDOM.addCharacterModal;
+
+            // Act
+            tracker.openAddCharacterModal();
+
+            // Assert
+            expect(mockDOM.addCharacterModal.style.display).to.equal('block');
+        });
+
+        it('should close add character modal', function() {
+            // Arrange
+            tracker.addCharacterModal = mockDOM.addCharacterModal;
+            tracker.addCharacterModal.style.display = 'block';
+
+            // Act
+            tracker.closeAddCharacterModal();
+
+            // Assert
+            expect(mockDOM.addCharacterModal.style.display).to.equal('none');
+        });
+
+        it('should open add enemy modal', function() {
+            // Arrange
+            tracker.addEnemyModal = mockDOM.addEnemyModal;
+
+            // Act
+            tracker.openAddEnemyModal();
+
+            // Assert
+            expect(mockDOM.addEnemyModal.style.display).to.equal('block');
+        });
+
+        it('should close add enemy modal', function() {
+            // Arrange
+            tracker.addEnemyModal = mockDOM.addEnemyModal;
+            tracker.addEnemyModal.style.display = 'block';
+
+            // Act
+            tracker.closeAddEnemyModal();
+
+            // Assert
+            expect(mockDOM.addEnemyModal.style.display).to.equal('none');
+        });
+
+        it('should close modal after adding character', function() {
+            // Arrange
+            tracker.modalCharacterNameInput = { value: 'Test' };
+            tracker.modalCharacterHPInput = { textContent: '10' };
+            tracker.addCharacterModal = mockDOM.addCharacterModal;
+            tracker.addCharacterModal.style.display = 'block';
+
+            // Act
+            tracker.addCharacterFromModal();
+
+            // Assert
+            expect(mockDOM.addCharacterModal.style.display).to.equal('none');
+        });
+
+        it('should close modal after adding enemy', function() {
+            // Arrange
+            tracker.modalEnemyNameInput = { value: 'Test' };
+            tracker.modalEnemyHPInput = { textContent: '10' };
+            tracker.addEnemyModal = mockDOM.addEnemyModal;
+            tracker.addEnemyModal.style.display = 'block';
+
+            // Act
+            tracker.addEnemyFromModal();
+
+            // Assert
+            expect(mockDOM.addEnemyModal.style.display).to.equal('none');
+        });
     });
 
     describe('Input Validation', function() {
-        it('should validate character name input', function() {
+        it('should validate character name input in modal', function() {
             // Arrange
-            tracker.characterNameInput = { value: '' };
-            tracker.characterHPInput = { value: '10' };
+            tracker.modalCharacterNameInput = { value: '' };
+            tracker.modalCharacterHPInput = { textContent: '10' };
+            tracker.addCharacterModal = mockDOM.addCharacterModal;
 
             // Act
             const originalLength = tracker.characters.length;
-            tracker.addCharacter();
+            tracker.addCharacterFromModal();
 
             // Assert
             expect(tracker.characters).to.have.length(originalLength);
         });
 
-        it('should validate HP input', function() {
+        it('should validate HP input in modal', function() {
             // Arrange
-            tracker.characterNameInput = { value: 'Test Character' };
-            tracker.characterHPInput = { value: '0' };
+            tracker.modalCharacterNameInput = { value: 'Test Character' };
+            tracker.modalCharacterHPInput = { textContent: '0' };
+            tracker.addCharacterModal = mockDOM.addCharacterModal;
 
             // Act
             const originalLength = tracker.characters.length;
-            tracker.addCharacter();
+            tracker.addCharacterFromModal();
 
             // Assert
             expect(tracker.characters).to.have.length(originalLength);
         });
 
-        it('should validate numeric HP input', function() {
+        it('should validate numeric HP input in modal', function() {
             // Arrange
-            tracker.characterNameInput = { value: 'Test Character' };
-            tracker.characterHPInput = { value: 'invalid' };
+            tracker.modalCharacterNameInput = { value: 'Test Character' };
+            tracker.modalCharacterHPInput = { textContent: 'invalid' };
+            tracker.addCharacterModal = mockDOM.addCharacterModal;
 
             // Act
             const originalLength = tracker.characters.length;
-            tracker.addCharacter();
+            tracker.addCharacterFromModal();
 
             // Assert
             expect(tracker.characters).to.have.length(originalLength);
+        });
+
+        it('should validate HP display is not an input field', function() {
+            // Arrange
+            tracker.modalCharacterNameInput = { value: 'Test' };
+            tracker.modalCharacterHPInput = { textContent: '15' };
+            tracker.addCharacterModal = mockDOM.addCharacterModal;
+
+            // Act
+            tracker.addCharacterFromModal();
+
+            // Assert
+            expect(tracker.characters).to.have.length(1);
+            expect(tracker.characters[0].hp).to.equal(15);
+            // Verify HP was read from textContent, not value
+            expect(tracker.modalCharacterHPInput.textContent).to.equal('15');
         });
     });
 
@@ -543,11 +686,17 @@ describe('InitiativeTracker - UI Tests', function() {
         it('should not cause memory leaks with repeated operations', function() {
             // Arrange
             const initialMemory = performance.memory ? performance.memory.usedJSHeapSize : 0;
+            tracker.modalCharacterNameInput = { value: 'Test' };
+            tracker.modalCharacterHPInput = { textContent: '10' };
+            tracker.modalEnemyNameInput = { value: 'Enemy' };
+            tracker.modalEnemyHPInput = { textContent: '8' };
+            tracker.addCharacterModal = mockDOM.addCharacterModal;
+            tracker.addEnemyModal = mockDOM.addEnemyModal;
 
             // Act - Perform many operations
             for (let i = 0; i < 50; i++) {
-                tracker.addCharacter();
-                tracker.addEnemy();
+                tracker.addCharacterFromModal();
+                tracker.addEnemyFromModal();
                 if (tracker.characters.length > 0) {
                     tracker.completeCharacter(tracker.characters[0].id);
                 }

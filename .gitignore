@@ -34,6 +34,7 @@ logs/
 # Temporary files
 *.tmp
 *.temp
+*.bak
 .cache/
 
 # Build artifacts (if any are added later)

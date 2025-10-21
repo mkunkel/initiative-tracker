@@ -70,4 +70,30 @@ global.performance = {
     }
 };
 
+// Suppress console.error and console.warn during tests to reduce noise from expected error handling
+const originalConsoleError = console.error;
+const originalConsoleWarn = console.warn;
+
+const suppressedMessages = [
+    'Could not save theme to localStorage',
+    'Error loading sessions',
+    'Error importing sessions',
+    'Error importing session',
+    'Session not found'
+];
+
+console.error = (...args) => {
+    const message = args[0]?.toString() || '';
+    if (!suppressedMessages.some(msg => message.includes(msg))) {
+        originalConsoleError.apply(console, args);
+    }
+};
+
+console.warn = (...args) => {
+    const message = args[0]?.toString() || '';
+    if (!suppressedMessages.some(msg => message.includes(msg))) {
+        originalConsoleWarn.apply(console, args);
+    }
+};
+
 console.log('🧪 Test environment configured');

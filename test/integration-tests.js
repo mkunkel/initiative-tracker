@@ -17,23 +17,51 @@ class InitiativeTracker {
     }
 
     initializeElements() {
-        // Mock DOM elements
-        this.characterNameInput = { value: 'Test Character' };
-        this.characterHPInput = { value: '10' };
-        this.enemyNameInput = { value: 'Test Enemy' };
-        this.enemyHPInput = { value: '8' };
+        // Mock DOM elements for modals
+        this.modalCharacterNameInput = { value: 'Test Character' };
+        this.modalCharacterHPInput = { textContent: '10' };
+        this.modalEnemyNameInput = { value: 'Test Enemy' };
+        this.modalEnemyHPInput = { textContent: '8' };
         this.onDeckList = { innerHTML: '', appendChild: () => {} };
         this.completedList = { innerHTML: '', appendChild: () => {} };
+        this.stunnedList = { innerHTML: '', appendChild: () => {} };
+        this.deadList = { innerHTML: '', appendChild: () => {} };
         this.themeSelect = { innerHTML: '', appendChild: () => {} };
+        this.addCharacterModal = { style: { display: 'none' } };
+        this.addEnemyModal = { style: { display: 'none' } };
     }
 
     bindEvents() {
         // Mock event binding
     }
 
-    addCharacter() {
-        const name = this.characterNameInput.value.trim();
-        const hp = parseInt(this.characterHPInput.value);
+    showModal(modal) {
+        modal.style.display = 'block';
+    }
+
+    hideModal(modal) {
+        modal.style.display = 'none';
+    }
+
+    openAddCharacterModal() {
+        this.showModal(this.addCharacterModal);
+    }
+
+    closeAddCharacterModal() {
+        this.hideModal(this.addCharacterModal);
+    }
+
+    openAddEnemyModal() {
+        this.showModal(this.addEnemyModal);
+    }
+
+    closeAddEnemyModal() {
+        this.hideModal(this.addEnemyModal);
+    }
+
+    addCharacterFromModal() {
+        const name = this.modalCharacterNameInput.value.trim();
+        const hp = parseInt(this.modalCharacterHPInput.textContent);
 
         if (!name || isNaN(hp) || hp < 1) {
             return;
@@ -49,12 +77,12 @@ class InitiativeTracker {
         };
 
         this.characters.push(character);
-        this.clearCharacterInputs();
+        this.closeAddCharacterModal();
     }
 
-    addEnemy() {
-        const name = this.enemyNameInput.value.trim();
-        const hp = parseInt(this.enemyHPInput.value);
+    addEnemyFromModal() {
+        const name = this.modalEnemyNameInput.value.trim();
+        const hp = parseInt(this.modalEnemyHPInput.textContent);
 
         if (!name || isNaN(hp) || hp < 1) {
             return;
@@ -70,18 +98,8 @@ class InitiativeTracker {
         };
 
         this.characters.push(enemy);
-        this.clearEnemyInputs();
-    }
-
-    clearCharacterInputs() {
-        this.characterNameInput.value = '';
-        this.characterHPInput.value = '5';
-    }
-
-    clearEnemyInputs() {
         this.enemyCounter++;
-        this.enemyNameInput.value = `Enemy ${this.enemyCounter}`;
-        this.enemyHPInput.value = '5';
+        this.closeAddEnemyModal();
     }
 
     completeCharacter(characterId) {
@@ -163,13 +181,17 @@ describe('InitiativeTracker - Integration Tests', function() {
     beforeEach(function() {
         // Create comprehensive mock DOM
         mockDOM = {
-            characterName: { value: 'Test Character' },
-            characterHP: { value: '10' },
-            enemyName: { value: 'Test Enemy' },
-            enemyHP: { value: '8' },
+            modalCharacterName: { value: 'Test Character' },
+            modalCharacterHP: { textContent: '10' },
+            modalEnemyName: { value: 'Test Enemy' },
+            modalEnemyHP: { textContent: '8' },
             onDeckList: { innerHTML: '', appendChild: function() {} },
             completedList: { innerHTML: '', appendChild: function() {} },
-            themeSelect: { innerHTML: '', appendChild: function() {} }
+            stunnedList: { innerHTML: '', appendChild: function() {} },
+            deadList: { innerHTML: '', appendChild: function() {} },
+            themeSelect: { innerHTML: '', appendChild: function() {} },
+            addCharacterModal: { style: { display: 'none' } },
+            addEnemyModal: { style: { display: 'none' } }
         };
 
         // Create tracker with mocked DOM
@@ -178,10 +200,12 @@ describe('InitiativeTracker - Integration Tests', function() {
         tracker.enemyCounter = 1;
 
         // Override tracker's input references to use mockDOM
-        tracker.characterNameInput = mockDOM.characterName;
-        tracker.characterHPInput = mockDOM.characterHP;
-        tracker.enemyNameInput = mockDOM.enemyName;
-        tracker.enemyHPInput = mockDOM.enemyHP;
+        tracker.modalCharacterNameInput = mockDOM.modalCharacterName;
+        tracker.modalCharacterHPInput = mockDOM.modalCharacterHP;
+        tracker.modalEnemyNameInput = mockDOM.modalEnemyName;
+        tracker.modalEnemyHPInput = mockDOM.modalEnemyHP;
+        tracker.addCharacterModal = mockDOM.addCharacterModal;
+        tracker.addEnemyModal = mockDOM.addEnemyModal;
     });
 
     describe('Character Creation Workflow', function() {
@@ -189,11 +213,11 @@ describe('InitiativeTracker - Integration Tests', function() {
             // Arrange
             const characterName = 'Fighter';
             const characterHP = 15;
-            mockDOM.characterName.value = characterName;
-            mockDOM.characterHP.value = characterHP;
+            mockDOM.modalCharacterName.value = characterName;
+            mockDOM.modalCharacterHP.textContent = String(characterHP);
 
             // Act
-            tracker.addCharacter();
+            tracker.addCharacterFromModal();
 
             // Assert
             expect(tracker.characters).to.have.length(1);
@@ -206,11 +230,11 @@ describe('InitiativeTracker - Integration Tests', function() {
             // Arrange
             const enemyName = 'Goblin';
             const enemyHP = 6;
-            mockDOM.enemyName.value = enemyName;
-            mockDOM.enemyHP.value = enemyHP;
+            mockDOM.modalEnemyName.value = enemyName;
+            mockDOM.modalEnemyHP.textContent = String(enemyHP);
 
             // Act
-            tracker.addEnemy();
+            tracker.addEnemyFromModal();
 
             // Assert
             expect(tracker.characters).to.have.length(1);
@@ -221,14 +245,14 @@ describe('InitiativeTracker - Integration Tests', function() {
 
         it('should handle multiple character types in same list', function() {
             // Arrange
-            mockDOM.characterName.value = 'Hero';
-            mockDOM.characterHP.value = '12';
-            mockDOM.enemyName.value = 'Orc';
-            mockDOM.enemyHP.value = '8';
+            mockDOM.modalCharacterName.value = 'Hero';
+            mockDOM.modalCharacterHP.textContent = '12';
+            mockDOM.modalEnemyName.value = 'Orc';
+            mockDOM.modalEnemyHP.textContent = '8';
 
             // Act
-            tracker.addCharacter();
-            tracker.addEnemy();
+            tracker.addCharacterFromModal();
+            tracker.addEnemyFromModal();
 
             // Assert
             expect(tracker.characters).to.have.length(2);
@@ -376,12 +400,12 @@ describe('InitiativeTracker - Integration Tests', function() {
     describe('Error Handling Integration', function() {
         it('should handle invalid input gracefully', function() {
             // Arrange
-            tracker.characterNameInput.value = '';
-            tracker.characterHPInput.value = 'invalid';
+            tracker.modalCharacterNameInput.value = '';
+            tracker.modalCharacterHPInput.textContent = 'invalid';
 
             // Act
             const originalLength = tracker.characters.length;
-            tracker.addCharacter();
+            tracker.addCharacterFromModal();
 
             // Assert - Should not add invalid character
             expect(tracker.characters).to.have.length(originalLength);

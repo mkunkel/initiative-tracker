@@ -7,9 +7,16 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <!-- Theme Selector and Clear Button -->
+    <!-- Session Selector, Theme Selector and Clear Button -->
     <div class="top-controls">
         <button id="clearAll" class="clear-btn-top">Clear All</button>
+        <div class="session-selector">
+            <label for="sessionSelect">Session:</label>
+            <select id="sessionSelect">
+                <option value="">Select a session...</option>
+            </select>
+            <button id="manageSessionsBtn" class="manage-sessions-btn" title="Manage Sessions">⚙️</button>
+        </div>
         <div class="theme-selector">
             <label for="themeSelect">Theme:</label>
             <select id="themeSelect">
@@ -22,40 +29,10 @@
         <header>
             <h1>RPG Initiative Tracker</h1>
 
-            <!-- Character Input Section -->
-            <div class="input-section">
-                <div class="character-input">
-                    <h2>Add Character</h2>
-                    <div class="input-group">
-                        <div class="input-field input-field-with-button">
-                            <label for="characterName">Character Name</label>
-                            <div class="input-with-refresh">
-                                <span id="refreshName" class="refresh-icon" title="Generate new name">🔄</span>
-                                <input type="text" id="characterName" placeholder="Enter character name" required>
-                            </div>
-                        </div>
-                        <div class="input-field input-field-hp">
-                            <label for="characterHP">Hit Points</label>
-                            <input type="number" id="characterHP" placeholder="5" value="5" min="1" required>
-                        </div>
-                        <button id="addCharacter">Add Character</button>
-                    </div>
-                </div>
-
-                <div class="enemy-input">
-                    <h2>Add Enemy</h2>
-                    <div class="input-group">
-                        <div class="input-field">
-                            <label for="enemyName">Enemy Name</label>
-                            <input type="text" id="enemyName" placeholder="Enter enemy name" value="Enemy 1">
-                        </div>
-                        <div class="input-field input-field-hp">
-                            <label for="enemyHP">Hit Points</label>
-                            <input type="number" id="enemyHP" placeholder="5" value="5" min="1" required>
-                        </div>
-                        <button id="addEnemy">Add Enemy</button>
-                    </div>
-                </div>
+            <!-- Add Buttons -->
+            <div class="add-buttons">
+                <button id="openCharacterModal" class="add-btn add-character-btn">➕ Add Character</button>
+                <button id="openEnemyModal" class="add-btn add-enemy-btn">➕ Add Enemy</button>
             </div>
         </header>
 
@@ -135,8 +112,151 @@
                 </div>
             </div>
         </div>
+
+        <!-- Add Character Modal -->
+        <div class="modal" id="addCharacterModal">
+            <div class="modal-content modal-form">
+                <h2>Add Character</h2>
+                <div class="form-field">
+                    <label for="modalCharacterName">Character Name</label>
+                    <div class="input-with-refresh">
+                        <span id="modalRefreshName" class="refresh-icon" title="Generate new name">🔄</span>
+                        <input type="text" id="modalCharacterName" placeholder="Enter character name" required>
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label for="modalCharacterHP">Hit Points</label>
+                    <div class="hp-controls">
+                        <button class="hp-btn modal-hp-btn" data-modal="character" data-action="decrease">−</button>
+                        <div class="hp-display" id="modalCharacterHP">5</div>
+                        <button class="hp-btn modal-hp-btn" data-modal="character" data-action="increase">+</button>
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button id="modalAddCharacter" class="primary-btn">Add Character</button>
+                    <button id="cancelCharacterModal" class="secondary-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Enemy Modal -->
+        <div class="modal" id="addEnemyModal">
+            <div class="modal-content modal-form">
+                <h2>Add Enemy</h2>
+                <div class="form-field">
+                    <label for="modalEnemyName">Enemy Name</label>
+                    <input type="text" id="modalEnemyName" placeholder="Enter enemy name" value="Enemy 1">
+                </div>
+                <div class="form-field">
+                    <label for="modalEnemyHP">Hit Points</label>
+                    <div class="hp-controls">
+                        <button class="hp-btn modal-hp-btn" data-modal="enemy" data-action="decrease">−</button>
+                        <div class="hp-display" id="modalEnemyHP">5</div>
+                        <button class="hp-btn modal-hp-btn" data-modal="enemy" data-action="increase">+</button>
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button id="modalAddEnemy" class="primary-btn">Add Enemy</button>
+                    <button id="cancelEnemyModal" class="secondary-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Session Warning Banner -->
+        <div id="sessionWarningBanner" class="session-warning-banner" style="display: none;">
+            <div class="warning-content">
+                <span class="warning-icon">ℹ️</span>
+                <span class="warning-text" id="warningText"></span>
+                <button id="saveWarningSession" class="warning-btn">💾 Save as Campaign</button>
+                <button id="dismissWarning" class="warning-btn warning-dismiss">Dismiss</button>
+            </div>
+        </div>
+
+        <!-- Session Cleanup Modal -->
+        <div class="modal" id="sessionCleanupModal">
+            <div class="modal-content">
+                <h2>⚠️ Old Quick Game Found</h2>
+                <div id="cleanupContent">
+                    <!-- Content will be inserted by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Manage Sessions Modal -->
+        <div class="modal" id="manageSessionsModal">
+            <div class="modal-content modal-large">
+                <h2>Manage Game Sessions</h2>
+
+                <div class="session-actions">
+                    <button id="newCampaignBtn" class="session-action-btn primary-btn">
+                        <span class="btn-icon">📁</span> New Campaign
+                    </button>
+                    <button id="newQuickGameBtn" class="session-action-btn quick-btn">
+                        <span class="btn-icon">⚡</span> Quick Game
+                    </button>
+                    <button id="importSessionsBtn" class="session-action-btn import-btn">
+                        <span class="btn-icon">📥</span> Import
+                    </button>
+                    <button id="exportAllSessionsBtn" class="session-action-btn export-btn">
+                        <span class="btn-icon">📤</span> Export All
+                    </button>
+                    <input type="file" id="importFileInput" accept=".json" style="display: none;">
+                </div>
+
+                <div class="sessions-container">
+                    <div class="sessions-section">
+                        <h3>Campaigns</h3>
+                        <div id="campaignsList" class="sessions-list">
+                            <!-- Campaign sessions will be listed here -->
+                        </div>
+                    </div>
+
+                    <div class="sessions-section">
+                        <h3>Quick Games</h3>
+                        <div id="quickGamesList" class="sessions-list">
+                            <!-- Quick game sessions will be listed here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-buttons">
+                    <button id="closeManageSessionsBtn" class="secondary-btn">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Campaign Name Modal -->
+        <div class="modal" id="newCampaignModal">
+            <div class="modal-content">
+                <h2>New Campaign</h2>
+                <div class="form-field">
+                    <label for="campaignNameInput">Campaign Name</label>
+                    <input type="text" id="campaignNameInput" placeholder="Enter campaign name" required>
+                </div>
+                <div class="modal-buttons">
+                    <button id="createCampaignBtn" class="primary-btn">Create</button>
+                    <button id="cancelNewCampaignBtn" class="secondary-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rename Session Modal -->
+        <div class="modal" id="renameSessionModal">
+            <div class="modal-content">
+                <h2>Rename Session</h2>
+                <div class="form-field">
+                    <label for="renameSessionInput">New Name</label>
+                    <input type="text" id="renameSessionInput" placeholder="Enter new name" required>
+                </div>
+                <div class="modal-buttons">
+                    <button id="confirmRenameBtn" class="primary-btn">Rename</button>
+                    <button id="cancelRenameBtn" class="secondary-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <script src="js/session-manager.js"></script>
     <script src="js/script.js"></script>
 </body>
 </html>

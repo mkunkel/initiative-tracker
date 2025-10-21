@@ -179,24 +179,31 @@
         }
 
         function runTestSuite(type) {
-            // Load the main application script
-            const script = document.createElement('script');
-            script.src = '../script.js';
-            script.onload = () => {
-                // Load test files based on type
-                const testFiles = getTestFiles(type);
-                loadTestFiles(testFiles, () => {
-                    // Run the tests
-                    mocha.run((failures) => {
-                        updateTestSummary(failures);
+            // Load the session manager first
+            const sessionScript = document.createElement('script');
+            sessionScript.src = '../js/session-manager.js';
+            sessionScript.onload = () => {
+                // Then load the main application script
+                const script = document.createElement('script');
+                script.src = '../js/script.js';
+                script.onload = () => {
+                    // Load test files based on type
+                    const testFiles = getTestFiles(type);
+                    loadTestFiles(testFiles, () => {
+                        // Run the tests
+                        mocha.run((failures) => {
+                            updateTestSummary(failures);
+                        });
                     });
-                });
+                };
+                document.head.appendChild(script);
             };
-            document.head.appendChild(script);
+            document.head.appendChild(sessionScript);
         }
 
         function getTestFiles(type) {
             const allTests = [
+                'session-manager-tests.js',
                 'unit-tests.js',
                 'integration-tests.js',
                 'theme-tests.js',
@@ -205,7 +212,7 @@
             ];
 
             switch(type) {
-                case 'unit': return ['unit-tests.js'];
+                case 'unit': return ['session-manager-tests.js', 'unit-tests.js'];
                 case 'integration': return ['integration-tests.js', 'ui-tests.js'];
                 case 'theme': return ['theme-tests.js'];
                 default: return allTests;

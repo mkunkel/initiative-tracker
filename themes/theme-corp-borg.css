@@ -439,3 +439,30 @@ label {
         border-width: 2px;
     }
 }
+
+/* Corp Borg Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 8px;
+    border: 2px solid rgba(254, 0, 43, 0.3);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(254, 0, 43, 0.8);
+}
+
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.6) rgba(0, 0, 0, 0.15);
+}

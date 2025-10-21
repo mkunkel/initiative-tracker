@@ -3,6 +3,7 @@ class InitiativeTracker {
     constructor() {
         this.characters = []; // Single array for all characters and enemies
         this.enemyCounter = 1;
+        this.currentRound = 1;
         this.characterToDelete = null;
         this.characterToStun = null;
         this.stunRoundsValue = 1;
@@ -20,25 +21,24 @@ class InitiativeTracker {
             'themes/theme-eat-the-reich.css': 'data/names-eat-the-reich.json'
         };
 
+        // Session management variables
+        this.sessionToRename = null;
+        this.sessionToDelete = null;
+
+        // Initialize SessionManager
+        this.sessionManager = new SessionManager();
+
         this.initializeElements();
         this.bindEvents();
         this.setupThemes();
+        this.checkForExpiredSessions(); // Check for cleanup before loading
         this.loadSavedTheme();
         this.loadCharacterNames();
         this.loadSavedData();
+        this.populateSessionSelector();
     }
 
     initializeElements() {
-        // Input elements
-        this.characterNameInput = document.getElementById('characterName');
-        this.characterHPInput = document.getElementById('characterHP');
-        this.addCharacterBtn = document.getElementById('addCharacter');
-        this.refreshNameBtn = document.getElementById('refreshName');
-
-        this.enemyNameInput = document.getElementById('enemyName');
-        this.enemyHPInput = document.getElementById('enemyHP');
-        this.addEnemyBtn = document.getElementById('addEnemy');
-
         // List containers
         this.onDeckList = document.getElementById('onDeckList');
         this.completedList = document.getElementById('completedList');
@@ -58,40 +58,84 @@ class InitiativeTracker {
         this.stunDecreaseBtn = document.getElementById('stunDecrease');
         this.stunRoundsDisplay = document.getElementById('stunRoundsDisplay');
 
+        // Add modals
+        this.addCharacterModal = document.getElementById('addCharacterModal');
+        this.addEnemyModal = document.getElementById('addEnemyModal');
+        this.openCharacterModalBtn = document.getElementById('openCharacterModal');
+        this.openEnemyModalBtn = document.getElementById('openEnemyModal');
+        this.modalCharacterNameInput = document.getElementById('modalCharacterName');
+        this.modalCharacterHPInput = document.getElementById('modalCharacterHP');
+        this.modalAddCharacterBtn = document.getElementById('modalAddCharacter');
+        this.cancelCharacterModalBtn = document.getElementById('cancelCharacterModal');
+        this.modalRefreshNameBtn = document.getElementById('modalRefreshName');
+        this.modalEnemyNameInput = document.getElementById('modalEnemyName');
+        this.modalEnemyHPInput = document.getElementById('modalEnemyHP');
+        this.modalAddEnemyBtn = document.getElementById('modalAddEnemy');
+        this.cancelEnemyModalBtn = document.getElementById('cancelEnemyModal');
+
         // Theme selector
         this.themeSelect = document.getElementById('themeSelect');
+
+        // Session selector
+        this.sessionSelect = document.getElementById('sessionSelect');
+        this.manageSessionsBtn = document.getElementById('manageSessionsBtn');
+
+        // Session modals and elements
+        this.sessionWarningBanner = document.getElementById('sessionWarningBanner');
+        this.warningText = document.getElementById('warningText');
+        this.saveWarningSessionBtn = document.getElementById('saveWarningSession');
+        this.dismissWarningBtn = document.getElementById('dismissWarning');
+
+        this.sessionCleanupModal = document.getElementById('sessionCleanupModal');
+        this.cleanupContent = document.getElementById('cleanupContent');
+
+        this.manageSessionsModal = document.getElementById('manageSessionsModal');
+        this.newCampaignBtn = document.getElementById('newCampaignBtn');
+        this.newQuickGameBtn = document.getElementById('newQuickGameBtn');
+        this.importSessionsBtn = document.getElementById('importSessionsBtn');
+        this.exportAllSessionsBtn = document.getElementById('exportAllSessionsBtn');
+        this.importFileInput = document.getElementById('importFileInput');
+        this.campaignsList = document.getElementById('campaignsList');
+        this.quickGamesList = document.getElementById('quickGamesList');
+        this.closeManageSessionsBtn = document.getElementById('closeManageSessionsBtn');
+
+        this.newCampaignModal = document.getElementById('newCampaignModal');
+        this.campaignNameInput = document.getElementById('campaignNameInput');
+        this.createCampaignBtn = document.getElementById('createCampaignBtn');
+        this.cancelNewCampaignBtn = document.getElementById('cancelNewCampaignBtn');
+
+        this.renameSessionModal = document.getElementById('renameSessionModal');
+        this.renameSessionInput = document.getElementById('renameSessionInput');
+        this.confirmRenameBtn = document.getElementById('confirmRenameBtn');
+        this.cancelRenameBtn = document.getElementById('cancelRenameBtn');
 
         // Clear button
         this.clearAllBtn = document.getElementById('clearAll');
     }
 
     bindEvents() {
-        // Character input events
-        this.addCharacterBtn.addEventListener('click', () => this.addCharacter());
-        this.characterNameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.addCharacter();
-        });
-        this.characterHPInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.addCharacter();
-        });
+        // Modal open buttons
+        this.openCharacterModalBtn.addEventListener('click', () => this.openAddCharacterModal());
+        this.openEnemyModalBtn.addEventListener('click', () => this.openAddEnemyModal());
 
-        // Auto-select character name on focus
-        this.characterNameInput.addEventListener('focus', () => {
-            this.characterNameInput.select();
+        // Character modal events
+        this.modalAddCharacterBtn.addEventListener('click', () => this.addCharacterFromModal());
+        this.cancelCharacterModalBtn.addEventListener('click', () => this.closeAddCharacterModal());
+        this.modalCharacterNameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.addCharacterFromModal();
         });
-
-        // Refresh name button
-        this.refreshNameBtn.addEventListener('click', () => {
+        this.modalCharacterNameInput.addEventListener('focus', () => {
+            this.modalCharacterNameInput.select();
+        });
+        this.modalRefreshNameBtn.addEventListener('click', () => {
             this.generateRandomCharacterName();
         });
 
-        // Enemy input events
-        this.addEnemyBtn.addEventListener('click', () => this.addEnemy());
-        this.enemyNameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.addEnemy();
-        });
-        this.enemyHPInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.addEnemy();
+        // Enemy modal events
+        this.modalAddEnemyBtn.addEventListener('click', () => this.addEnemyFromModal());
+        this.cancelEnemyModalBtn.addEventListener('click', () => this.closeAddEnemyModal());
+        this.modalEnemyNameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.addEnemyFromModal();
         });
 
         // Modal events
@@ -109,6 +153,38 @@ class InitiativeTracker {
         // Clear all button event
         this.clearAllBtn.addEventListener('click', () => this.clearAll());
 
+        // Session selector event
+        this.sessionSelect.addEventListener('change', (e) => this.switchSession(e.target.value));
+
+        // Session management button
+        this.manageSessionsBtn.addEventListener('click', () => this.openManageSessionsModal());
+
+        // Session warning banner events
+        this.saveWarningSessionBtn.addEventListener('click', () => this.saveWarningSessionAsCampaign());
+        this.dismissWarningBtn.addEventListener('click', () => this.dismissWarning());
+
+        // Manage sessions modal events
+        this.newCampaignBtn.addEventListener('click', () => this.openNewCampaignModal());
+        this.newQuickGameBtn.addEventListener('click', () => this.createQuickGame());
+        this.importSessionsBtn.addEventListener('click', () => this.importFileInput.click());
+        this.exportAllSessionsBtn.addEventListener('click', () => this.exportAllSessions());
+        this.importFileInput.addEventListener('change', (e) => this.handleImportFile(e));
+        this.closeManageSessionsBtn.addEventListener('click', () => this.hideModal(this.manageSessionsModal));
+
+        // New campaign modal events
+        this.createCampaignBtn.addEventListener('click', () => this.createCampaign());
+        this.cancelNewCampaignBtn.addEventListener('click', () => this.hideModal(this.newCampaignModal));
+        this.campaignNameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.createCampaign();
+        });
+
+        // Rename session modal events
+        this.confirmRenameBtn.addEventListener('click', () => this.confirmRename());
+        this.cancelRenameBtn.addEventListener('click', () => this.hideModal(this.renameSessionModal));
+        this.renameSessionInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.confirmRename();
+        });
+
         // Close modals when clicking outside
         this.roundCompleteModal.addEventListener('click', (e) => {
             if (e.target === this.roundCompleteModal) {
@@ -125,6 +201,36 @@ class InitiativeTracker {
         this.stunModal.addEventListener('click', (e) => {
             if (e.target === this.stunModal) {
                 this.cancelStun();
+            }
+        });
+
+        this.addCharacterModal.addEventListener('click', (e) => {
+            if (e.target === this.addCharacterModal) {
+                this.closeAddCharacterModal();
+            }
+        });
+
+        this.addEnemyModal.addEventListener('click', (e) => {
+            if (e.target === this.addEnemyModal) {
+                this.closeAddEnemyModal();
+            }
+        });
+
+        // HP button controls in modals
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-hp-btn')) {
+                const modalType = e.target.dataset.modal;
+                const action = e.target.dataset.action;
+                const hpDisplay = document.getElementById(modalType === 'character' ? 'modalCharacterHP' : 'modalEnemyHP');
+
+                if (hpDisplay) {
+                    const currentValue = parseInt(hpDisplay.textContent) || 1;
+                    if (action === 'increase') {
+                        hpDisplay.textContent = currentValue + 1;
+                    } else if (action === 'decrease') {
+                        hpDisplay.textContent = Math.max(1, currentValue - 1);
+                    }
+                }
             }
         });
 
@@ -175,9 +281,34 @@ class InitiativeTracker {
         });
     }
 
-    addCharacter() {
-        const name = this.characterNameInput.value.trim();
-        const hp = parseInt(this.characterHPInput.value);
+    // Modal management methods
+    openAddCharacterModal() {
+        this.generateRandomCharacterName();
+        this.modalCharacterHPInput.textContent = '5';
+        this.showModal(this.addCharacterModal);
+        // Focus on name input after modal opens
+        setTimeout(() => this.modalCharacterNameInput.focus(), 100);
+    }
+
+    closeAddCharacterModal() {
+        this.hideModal(this.addCharacterModal);
+    }
+
+    openAddEnemyModal() {
+        this.modalEnemyNameInput.value = `Enemy ${this.enemyCounter}`;
+        this.modalEnemyHPInput.textContent = '5';
+        this.showModal(this.addEnemyModal);
+        // Focus on name input after modal opens
+        setTimeout(() => this.modalEnemyNameInput.focus(), 100);
+    }
+
+    closeAddEnemyModal() {
+        this.hideModal(this.addEnemyModal);
+    }
+
+    addCharacterFromModal() {
+        const name = this.modalCharacterNameInput.value.trim();
+        const hp = parseInt(this.modalCharacterHPInput.textContent);
 
         if (!name || isNaN(hp) || hp < 1) {
             alert('Please enter a valid name and hit points (minimum 1)');
@@ -195,12 +326,12 @@ class InitiativeTracker {
         this.characters.push(character);
         this.saveData();
         this.renderCharacters();
-        this.clearCharacterInputs();
+        this.closeAddCharacterModal();
     }
 
-    addEnemy() {
-        const name = this.enemyNameInput.value.trim();
-        const hp = parseInt(this.enemyHPInput.value);
+    addEnemyFromModal() {
+        const name = this.modalEnemyNameInput.value.trim();
+        const hp = parseInt(this.modalEnemyHPInput.textContent);
 
         if (!name || isNaN(hp) || hp < 1) {
             alert('Please enter a valid name and hit points (minimum 1)');
@@ -218,18 +349,8 @@ class InitiativeTracker {
         this.characters.push(enemy);
         this.saveData();
         this.renderCharacters();
-        this.clearEnemyInputs();
-    }
-
-    clearCharacterInputs() {
-        this.generateRandomCharacterName();
-        this.characterHPInput.value = '5';
-    }
-
-    clearEnemyInputs() {
         this.enemyCounter++;
-        this.enemyNameInput.value = `Enemy ${this.enemyCounter}`;
-        this.enemyHPInput.value = '5';
+        this.closeAddEnemyModal();
     }
 
     updateEnemyNameDefault() {
@@ -589,6 +710,9 @@ class InitiativeTracker {
     }
 
     startNextRound() {
+        // Increment round counter
+        this.currentRound++;
+
         // Reset all characters to not completed
         this.characters.forEach(char => {
             char.completed = false;
@@ -626,21 +750,16 @@ class InitiativeTracker {
     }
 
     clearAll() {
+        if (!confirm('Are you sure you want to clear all characters and enemies? This cannot be undone.')) {
+            return;
+        }
+
         // Clear all characters and enemies
         this.characters = [];
 
-        // Reset enemy counter to 1
+        // Reset counters
         this.enemyCounter = 1;
-
-        // Reset enemy name input to "Enemy 1"
-        this.enemyNameInput.value = 'Enemy 1';
-
-        // Clear character inputs
-        this.characterNameInput.value = '';
-        this.characterHPInput.value = '5';
-
-        // Reset enemy HP input
-        this.enemyHPInput.value = '5';
+        this.currentRound = 1;
 
         // Save cleared state
         this.saveData();
@@ -742,32 +861,21 @@ class InitiativeTracker {
 
     // Data Persistence Methods
     saveData() {
-        const data = {
-            characters: this.characters,
-            enemyCounter: this.enemyCounter
-        };
-        localStorage.setItem('initiative-tracker-data', JSON.stringify(data));
+        // Save to current session via SessionManager
+        this.saveCurrentSession();
     }
 
     loadSavedData() {
-        const savedData = localStorage.getItem('initiative-tracker-data');
+        // Load from current session via SessionManager
+        const currentSession = this.sessionManager.getCurrentSession();
 
-        if (savedData) {
-            try {
-                const data = JSON.parse(savedData);
-                this.characters = data.characters || [];
-                this.enemyCounter = data.enemyCounter || 1;
-
-                // Update enemy name input to reflect current counter
-                this.enemyNameInput.value = `Enemy ${this.enemyCounter}`;
-
-                // Render the loaded characters
-                this.renderCharacters();
-            } catch (error) {
-                console.error('Error loading saved data:', error);
-                // If there's an error, start fresh
-                this.characters = [];
-                this.enemyCounter = 1;
+        if (currentSession) {
+            this.loadSessionData(currentSession.id);
+        } else {
+            // No session exists, create a quick game
+            const sessions = this.sessionManager.getAllSessions();
+            if (sessions.length === 0) {
+                this.createQuickGame();
             }
         }
     }
@@ -798,11 +906,11 @@ class InitiativeTracker {
 
         // If no names loaded yet, use a placeholder
         if (!nameData) {
-            this.characterNameInput.value = 'Character';
+            this.modalCharacterNameInput.value = 'Character';
             return;
         }
 
-        const currentName = this.characterNameInput.value;
+        const currentName = this.modalCharacterNameInput.value;
         let randomName;
         let attempts = 0;
         const maxAttempts = 10;
@@ -817,7 +925,7 @@ class InitiativeTracker {
             }
         } while (randomName === currentName);
 
-        this.characterNameInput.value = randomName;
+        this.modalCharacterNameInput.value = randomName;
     }
 
     generateNameFromData(nameData) {
@@ -968,6 +1076,469 @@ class InitiativeTracker {
         }
 
         return parts;
+    }
+
+    // Session Management Methods
+
+    checkForExpiredSessions() {
+        const expired = this.sessionManager.getExpiredQuickGames();
+        const warning = this.sessionManager.getWarningQuickGames();
+
+        if (expired.length > 0) {
+            this.showCleanupModal(expired);
+        } else if (warning.length > 0) {
+            this.showWarningBanner(warning[0]);
+        }
+    }
+
+    showCleanupModal(expiredSessions) {
+        let content = '<p>The following quick game(s) haven\'t been played in over 30 days:</p><ul>';
+
+        expiredSessions.forEach(session => {
+            const extendedText = session.extendedCount > 0
+                ? ` (extended ${session.extendedCount} time${session.extendedCount > 1 ? 's' : ''})`
+                : '';
+            content += `<li><strong>${session.name}</strong>${extendedText}</li>`;
+        });
+
+        content += '</ul><p>What would you like to do?</p>';
+        content += '<div class="modal-buttons">';
+        content += `<button class="primary-btn" onclick="tracker.deleteExpiredSessions()">Delete</button>`;
+        content += `<button class="secondary-btn" onclick="tracker.saveToCampaignPrompt('${expiredSessions[0].id}')">💾 Save as Campaign</button>`;
+        content += `<button class="secondary-btn" onclick="tracker.extendExpiredSession('${expiredSessions[0].id}')">Keep 30 More Days</button>`;
+        content += '</div>';
+
+        this.cleanupContent.innerHTML = content;
+        this.showModal(this.sessionCleanupModal);
+    }
+
+    showWarningBanner(session) {
+        const daysLeft = this.sessionManager.getDaysUntilExpiration(session);
+        const extendedText = session.extendedCount > 0
+            ? ` This game has been extended ${session.extendedCount} time${session.extendedCount > 1 ? 's' : ''}.`
+            : '';
+
+        this.warningText.textContent = `Quick Game "${session.name}" will expire in ${daysLeft} days.${extendedText}`;
+        this.sessionWarningBanner.style.display = 'block';
+
+        // Store session ID for later use
+        this.sessionWarningBanner.dataset.sessionId = session.id;
+    }
+
+    dismissWarning() {
+        this.sessionWarningBanner.style.display = 'none';
+    }
+
+    saveWarningSessionAsCampaign() {
+        const sessionId = this.sessionWarningBanner.dataset.sessionId;
+        this.saveToCampaignPrompt(sessionId);
+    }
+
+    deleteExpiredSessions() {
+        const expired = this.sessionManager.getExpiredQuickGames();
+        expired.forEach(session => {
+            this.sessionManager.deleteSession(session.id);
+        });
+
+        this.hideModal(this.sessionCleanupModal);
+        this.populateSessionSelector();
+
+        // If we deleted the current session, clear the tracker
+        if (!this.sessionManager.getCurrentSession()) {
+            this.characters = [];
+            this.currentRound = 1;
+            this.renderCharacters();
+        }
+    }
+
+    extendExpiredSession(sessionId) {
+        this.sessionManager.extendSession(sessionId);
+        this.hideModal(this.sessionCleanupModal);
+        this.dismissWarning();
+    }
+
+    saveToCampaignPrompt(sessionId) {
+        const session = this.sessionManager.getSession(sessionId);
+        const campaignName = prompt(`Enter a name for this campaign:`, session.name.replace('Quick Game', 'Campaign'));
+
+        if (campaignName) {
+            this.sessionManager.promoteToCarnapaign(sessionId, campaignName);
+            this.hideModal(this.sessionCleanupModal);
+            this.dismissWarning();
+            this.populateSessionSelector();
+        }
+    }
+
+    populateSessionSelector() {
+        const sessions = this.sessionManager.getAllSessions();
+        const currentSessionId = this.sessionManager.currentSessionId;
+
+        // Clear existing options except the placeholder
+        this.sessionSelect.innerHTML = '<option value="">Select a session...</option>';
+
+        // Group by type
+        const campaigns = sessions.filter(s => s.type === 'campaign');
+        const quickGames = sessions.filter(s => s.type === 'quick');
+
+        // Add campaigns
+        if (campaigns.length > 0) {
+            const campaignGroup = document.createElement('optgroup');
+            campaignGroup.label = 'Campaigns';
+            campaigns.forEach(session => {
+                const option = document.createElement('option');
+                option.value = session.id;
+                option.textContent = session.name;
+                if (session.id === currentSessionId) {
+                    option.selected = true;
+                }
+                campaignGroup.appendChild(option);
+            });
+            this.sessionSelect.appendChild(campaignGroup);
+        }
+
+        // Add quick games
+        if (quickGames.length > 0) {
+            const quickGroup = document.createElement('optgroup');
+            quickGroup.label = 'Quick Games';
+            quickGames.forEach(session => {
+                const option = document.createElement('option');
+                option.value = session.id;
+                const daysLeft = this.sessionManager.getDaysUntilExpiration(session);
+                option.textContent = `${session.name} (${daysLeft} days left)`;
+                if (session.id === currentSessionId) {
+                    option.selected = true;
+                }
+                quickGroup.appendChild(option);
+            });
+            this.sessionSelect.appendChild(quickGroup);
+        }
+
+        // If no current session and we have sessions, create a new quick game
+        if (!currentSessionId && sessions.length === 0) {
+            this.createQuickGame();
+        }
+    }
+
+    switchSession(sessionId) {
+        if (!sessionId) return;
+
+        // Save current session before switching
+        this.saveCurrentSession();
+
+        // Switch to new session
+        this.sessionManager.switchSession(sessionId);
+
+        // Load new session data
+        this.loadSessionData(sessionId);
+    }
+
+    loadSessionData(sessionId) {
+        const session = this.sessionManager.getSession(sessionId);
+        if (!session) return;
+
+        // Load characters and round
+        this.characters = session.characters || [];
+        this.currentRound = session.currentRound || 1;
+        this.enemyCounter = session.enemyCounter || 1;
+
+        // Load theme
+        if (session.theme && session.theme !== this.currentTheme) {
+            this.themeSelect.value = session.theme;
+            this.changeTheme(session.theme);
+        }
+
+        // Render
+        this.renderCharacters();
+    }
+
+    saveCurrentSession() {
+        const currentSession = this.sessionManager.getCurrentSession();
+        if (!currentSession) return;
+
+        this.sessionManager.updateSession(currentSession.id, {
+            characters: this.characters,
+            currentRound: this.currentRound,
+            enemyCounter: this.enemyCounter,
+            theme: this.currentTheme
+        });
+    }
+
+    openManageSessionsModal() {
+        this.renderSessionLists();
+        this.showModal(this.manageSessionsModal);
+    }
+
+    renderSessionLists() {
+        const campaigns = this.sessionManager.getSessionsByType('campaign');
+        const quickGames = this.sessionManager.getSessionsByType('quick');
+
+        // Render campaigns
+        this.campaignsList.innerHTML = '';
+        if (campaigns.length === 0) {
+            this.campaignsList.innerHTML = '<p class="empty-message">No campaigns yet. Create one to get started!</p>';
+        } else {
+            campaigns.forEach(session => {
+                this.campaignsList.appendChild(this.createSessionListItem(session));
+            });
+        }
+
+        // Render quick games
+        this.quickGamesList.innerHTML = '';
+        if (quickGames.length === 0) {
+            this.quickGamesList.innerHTML = '<p class="empty-message">No quick games.</p>';
+        } else {
+            quickGames.forEach(session => {
+                this.quickGamesList.appendChild(this.createSessionListItem(session));
+            });
+        }
+    }
+
+    createSessionListItem(session) {
+        const div = document.createElement('div');
+        div.className = 'session-item';
+
+        const info = document.createElement('div');
+        info.className = 'session-info';
+
+        const name = document.createElement('strong');
+        name.textContent = session.name;
+        info.appendChild(name);
+
+        const meta = document.createElement('div');
+        meta.className = 'session-meta';
+
+        const lastPlayed = new Date(session.lastPlayed);
+        const daysSince = this.sessionManager.daysSinceLastPlayed(session);
+        meta.textContent = `Last played ${daysSince} day${daysSince !== 1 ? 's' : ''} ago`;
+
+        if (session.type === 'quick') {
+            const daysLeft = this.sessionManager.getDaysUntilExpiration(session);
+            meta.textContent += ` • Expires in ${daysLeft} days`;
+
+            if (session.extendedCount > 0) {
+                meta.textContent += ` • Extended ${session.extendedCount}x`;
+            }
+        }
+
+        info.appendChild(meta);
+        div.appendChild(info);
+
+        const actions = document.createElement('div');
+        actions.className = 'session-actions';
+
+        const loadBtn = document.createElement('button');
+        loadBtn.textContent = 'Load';
+        loadBtn.className = 'session-btn load-btn';
+        loadBtn.onclick = () => {
+            this.switchSession(session.id);
+            this.hideModal(this.manageSessionsModal);
+        };
+        actions.appendChild(loadBtn);
+
+        const renameBtn = document.createElement('button');
+        renameBtn.textContent = '✏️';
+        renameBtn.className = 'session-btn rename-btn';
+        renameBtn.title = 'Rename';
+        renameBtn.onclick = () => this.openRenameModal(session.id);
+        actions.appendChild(renameBtn);
+
+        const exportBtn = document.createElement('button');
+        exportBtn.textContent = '📤';
+        exportBtn.className = 'session-btn export-btn-small';
+        exportBtn.title = 'Export Session';
+        exportBtn.onclick = () => this.exportSession(session.id);
+        actions.appendChild(exportBtn);
+
+        // Add promote button for quick games
+        if (session.type === 'quick') {
+            const promoteBtn = document.createElement('button');
+            promoteBtn.textContent = '💾';
+            promoteBtn.className = 'session-btn promote-btn';
+            promoteBtn.title = 'Promote to Campaign';
+            promoteBtn.onclick = () => this.promoteQuickGameModal(session.id);
+            actions.appendChild(promoteBtn);
+        }
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = '✖';
+        deleteBtn.className = 'session-btn delete-btn';
+        deleteBtn.title = 'Delete';
+        deleteBtn.onclick = () => this.deleteSessionConfirm(session.id);
+        actions.appendChild(deleteBtn);
+
+        div.appendChild(actions);
+
+        return div;
+    }
+
+    openNewCampaignModal() {
+        this.campaignNameInput.value = '';
+        this.showModal(this.newCampaignModal);
+        this.campaignNameInput.focus();
+    }
+
+    createCampaign() {
+        const name = this.campaignNameInput.value.trim();
+        if (!name) {
+            alert('Please enter a campaign name');
+            return;
+        }
+
+        const sessionId = this.sessionManager.createSession(name, 'campaign', this.currentTheme);
+        this.sessionManager.setCurrentSessionId(sessionId);
+
+        this.hideModal(this.newCampaignModal);
+        this.hideModal(this.manageSessionsModal);
+        this.populateSessionSelector();
+
+        // Clear current data for new campaign
+        this.characters = [];
+        this.currentRound = 1;
+        this.enemyCounter = 1;
+        this.renderCharacters();
+    }
+
+    createQuickGame() {
+        const sessionId = this.sessionManager.createSession('Quick Game', 'quick', this.currentTheme);
+        this.sessionManager.setCurrentSessionId(sessionId);
+
+        this.hideModal(this.manageSessionsModal);
+        this.populateSessionSelector();
+
+        // Clear current data for new game
+        this.characters = [];
+        this.currentRound = 1;
+        this.enemyCounter = 1;
+        this.renderCharacters();
+    }
+
+    openRenameModal(sessionId) {
+        const session = this.sessionManager.getSession(sessionId);
+        this.sessionToRename = sessionId;
+        this.renameSessionInput.value = session.name;
+        this.showModal(this.renameSessionModal);
+        this.renameSessionInput.focus();
+        this.renameSessionInput.select();
+    }
+
+    confirmRename() {
+        const newName = this.renameSessionInput.value.trim();
+        if (!newName) {
+            alert('Please enter a session name');
+            return;
+        }
+
+        this.sessionManager.renameSession(this.sessionToRename, newName);
+        this.sessionToRename = null;
+
+        this.hideModal(this.renameSessionModal);
+        this.renderSessionLists();
+        this.populateSessionSelector();
+    }
+
+    deleteSessionConfirm(sessionId) {
+        const session = this.sessionManager.getSession(sessionId);
+        if (confirm(`Are you sure you want to delete "${session.name}"? This cannot be undone.`)) {
+            this.sessionManager.deleteSession(sessionId);
+            this.renderSessionLists();
+            this.populateSessionSelector();
+
+            // If we deleted the current session, clear the tracker
+            if (sessionId === this.sessionManager.currentSessionId) {
+                this.characters = [];
+                this.currentRound = 1;
+                this.renderCharacters();
+            }
+        }
+    }
+
+    promoteQuickGameModal(sessionId) {
+        const session = this.sessionManager.getSession(sessionId);
+        const campaignName = prompt(
+            `Promote "${session.name}" to a permanent campaign.\n\nEnter a name for this campaign:`,
+            session.name.replace('Quick Game', 'Campaign')
+        );
+
+        if (campaignName) {
+            this.sessionManager.promoteToCarnapaign(sessionId, campaignName);
+            this.renderSessionLists();
+            this.populateSessionSelector();
+
+            // Show success message
+            alert(`"${campaignName}" has been promoted to a campaign! It will no longer expire.`);
+        }
+    }
+
+    /**
+     * Export a single session to a JSON file
+     */
+    exportSession(sessionId) {
+        const session = this.sessionManager.getSession(sessionId);
+        if (!session) {
+            alert('Session not found');
+            return;
+        }
+
+        const jsonData = this.sessionManager.exportSession(sessionId);
+        const safeFilename = session.name.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+        const filename = `${safeFilename}-${new Date().toISOString().split('T')[0]}.json`;
+        this.downloadFile(jsonData, filename, 'application/json');
+    }
+
+    /**
+     * Export all sessions to a JSON file
+     */
+    exportAllSessions() {
+        const jsonData = this.sessionManager.exportAllSessions();
+        const filename = `initiative-tracker-export-${new Date().toISOString().split('T')[0]}.json`;
+        this.downloadFile(jsonData, filename, 'application/json');
+    }
+
+    /**
+     * Handle file import from file input
+     */
+    handleImportFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const jsonData = e.target.result;
+            const result = this.sessionManager.importSessions(jsonData);
+
+            if (result.success) {
+                alert(`Successfully imported ${result.imported} session(s)!${result.skipped > 0 ? `\n${result.skipped} session(s) were skipped due to invalid data.` : ''}`);
+                this.renderSessionLists();
+                this.populateSessionSelector();
+            } else {
+                alert(`Import failed: ${result.error}`);
+            }
+
+            // Reset file input
+            event.target.value = '';
+        };
+
+        reader.onerror = () => {
+            alert('Error reading file. Please try again.');
+            event.target.value = '';
+        };
+
+        reader.readAsText(file);
+    }
+
+    /**
+     * Download data as a file
+     */
+    downloadFile(data, filename, mimeType) {
+        const blob = new Blob([data], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
     }
 }
 

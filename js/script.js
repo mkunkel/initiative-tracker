@@ -88,6 +88,14 @@ class InitiativeTracker {
         this.confirmEntityRenameBtn = document.getElementById('confirmRename');
         this.cancelEntityRenameBtn = document.getElementById('cancelRename');
 
+        // Entity notes modal elements
+        this.notesModal = document.getElementById('notesModal');
+        this.notesTextarea = document.getElementById('notesTextarea');
+        this.notesEntityName = document.getElementById('notesEntityName');
+        this.saveNotesBtn = document.getElementById('saveNotes');
+        this.cancelNotesBtn = document.getElementById('cancelNotes');
+        this.currentNotesEntityId = null;
+
         // Add modals
         this.addCharacterModal = document.getElementById('addCharacterModal');
         this.addEnemyModal = document.getElementById('addEnemyModal');
@@ -185,6 +193,10 @@ class InitiativeTracker {
                 this.confirmEntityRename();
             }
         });
+
+        // Notes modal event listeners
+        this.saveNotesBtn.addEventListener('click', () => this.saveEntityNotes());
+        this.cancelNotesBtn.addEventListener('click', () => this.cancelEntityNotes());
 
         // Game selector event (theme changes automatically with game)
         this.gameSelect.addEventListener('change', (e) => this.changeGame(e.target.value));
@@ -379,6 +391,9 @@ class InitiativeTracker {
                     break;
                 case 'toggle-primary':
                     this.togglePrimaryObjective(characterId);
+                    break;
+                case 'notes':
+                    this.openNotesModal(characterId);
                     break;
             }
         });
@@ -881,6 +896,11 @@ class InitiativeTracker {
         const moveDownBtn = index < totalLength - 1 ? `<button class="control-btn move-btn" data-action="move-down" data-character-id="${character.id}" title="Move down">⬇️</button>` : '';
         const moveToBottomBtn = index === 0 && totalLength > 1 ? `<button class="control-btn move-btn" data-action="move-to-bottom" data-character-id="${character.id}" title="Move to bottom">⏬</button>` : '';
 
+        // Notes button with badge if notes exist
+        const hasNotes = character.notes && character.notes.trim().length > 0;
+        const notesBadge = hasNotes ? '<span class="notes-badge"></span>' : '';
+        const notesBtn = `<button class="control-btn notes-btn" data-action="notes" data-character-id="${character.id}" title="Add/Edit Notes">📝${notesBadge}</button>`;
+
         // HP/Resource section (conditionally shown)
         const hpSectionCompleted = showResource ? `
             <div class="hp-section hp-section-completed">
@@ -908,6 +928,7 @@ class InitiativeTracker {
                         ${moveUpBtn}
                         ${moveDownBtn}
                         ${moveToBottomBtn}
+                        ${notesBtn}
                         <button class="control-btn delete-btn" data-action="delete" data-character-id="${character.id}">✖</button>
                     </div>
                 </div>
@@ -928,6 +949,7 @@ class InitiativeTracker {
                         ${moveUpBtn}
                         ${moveDownBtn}
                         ${moveToBottomBtn}
+                        ${notesBtn}
                         <button class="control-btn delete-btn" data-action="delete" data-character-id="${character.id}">✖</button>
                     </div>
                 </div>
@@ -954,6 +976,7 @@ class InitiativeTracker {
                         ${moveToBottomBtn}
                         <button class="control-btn stun-btn" data-action="stun" data-character-id="${character.id}">😵‍💫</button>
                         <button class="control-btn dead-btn" data-action="kill" data-character-id="${character.id}">💀</button>
+                        ${notesBtn}
                         <button class="control-btn delete-btn" data-action="delete" data-character-id="${character.id}">✖</button>
                     </div>
                 </div>
@@ -976,6 +999,7 @@ class InitiativeTracker {
                         ${moveToBottomBtn}
                         <button class="control-btn stun-btn" data-action="stun" data-character-id="${character.id}">😵‍💫</button>
                         <button class="control-btn dead-btn" data-action="kill" data-character-id="${character.id}">💀</button>
+                        ${notesBtn}
                         <button class="control-btn delete-btn" data-action="delete" data-character-id="${character.id}">✖</button>
                     </div>
                 </div>
@@ -1263,6 +1287,36 @@ class InitiativeTracker {
             this.saveData();
             this.renderCharacters();
         }
+    }
+
+    // Notes modal methods
+    openNotesModal(entityId) {
+        const entity = this.characters.find(char => char.id == entityId);
+        if (!entity) return;
+
+        this.currentNotesEntityId = entityId;
+        this.notesEntityName.textContent = entity.name;
+        this.notesTextarea.value = entity.notes || '';
+        this.showModal(this.notesModal);
+        setTimeout(() => this.notesTextarea.focus(), 100);
+    }
+
+    saveEntityNotes() {
+        if (!this.currentNotesEntityId) return;
+
+        const entity = this.characters.find(char => char.id == this.currentNotesEntityId);
+        if (entity) {
+            entity.notes = this.notesTextarea.value.trim();
+            this.saveData();
+        }
+
+        this.hideModal(this.notesModal);
+        this.currentNotesEntityId = null;
+    }
+
+    cancelEntityNotes() {
+        this.hideModal(this.notesModal);
+        this.currentNotesEntityId = null;
     }
 
     convertEntityType(entityId) {

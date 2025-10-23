@@ -637,6 +637,29 @@ h1 {
     transform: scale(1.1);
 }
 
+.notes-btn {
+    background: #805ad5;
+    color: var(--text-inverse);
+    position: relative;
+}
+
+.notes-btn:hover {
+    background: #6b46c1;
+    transform: scale(1.1);
+}
+
+.notes-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 10px;
+    height: 10px;
+    background: #ff0000;
+    border-radius: 50%;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+}
+
 /* Stun rounds badge */
 .stun-rounds {
     background: rgba(255, 255, 255, 0.3);
@@ -860,6 +883,26 @@ h1 {
 }
 
 .form-field input:focus {
+    outline: none;
+    border-color: var(--input-border-focus);
+    box-shadow: var(--input-focus-shadow);
+}
+
+.form-field textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--input-border);
+    border-radius: var(--radius-md);
+    background: var(--input-bg);
+    color: var(--text-primary);
+    font-size: var(--font-size-body);
+    font-family: inherit;
+    resize: vertical;
+    transition: all 0.3s ease;
+    min-height: 200px;
+}
+
+.form-field textarea:focus {
     outline: none;
     border-color: var(--input-border-focus);
     box-shadow: var(--input-focus-shadow);

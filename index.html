@@ -96,6 +96,21 @@
             </div>
         </div>
 
+        <!-- Rename Entity Modal -->
+        <div class="modal" id="renameModal">
+            <div class="modal-content">
+                <h2>Rename Entity</h2>
+                <div class="form-field">
+                    <label for="renameInput">New Name</label>
+                    <input type="text" id="renameInput" placeholder="Enter new name" required>
+                </div>
+                <div class="modal-buttons">
+                    <button id="confirmRename" class="primary-btn">Rename</button>
+                    <button id="cancelRename" class="secondary-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+
         <!-- Stun Rounds Modal -->
         <div class="modal" id="stunModal">
             <div class="modal-content">
@@ -122,6 +137,23 @@
                     <div class="input-with-refresh">
                         <span id="modalRefreshName" class="refresh-icon" title="Generate new name">🔄</span>
                         <input type="text" id="modalCharacterName" placeholder="Enter character name" required>
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label>Character Type</label>
+                    <div class="entity-type-selector">
+                        <label class="radio-label" title="Player Character">
+                            <input type="radio" name="entityType" value="pc" id="entityTypePC" checked>
+                            <div class="entity-type-option">
+                                <span class="entity-type-icon">👤</span> PC
+                            </div>
+                        </label>
+                        <label class="radio-label" title="Non-Player Character">
+                            <input type="radio" name="entityType" value="npc" id="entityTypeNPC">
+                            <div class="entity-type-option">
+                                <span class="entity-type-icon">🤝</span> NPC
+                            </div>
+                        </label>
                     </div>
                 </div>
                 <div class="form-field">

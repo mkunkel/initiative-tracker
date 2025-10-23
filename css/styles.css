@@ -415,6 +415,18 @@ h1 {
     color: var(--completed-text);
 }
 
+.character-card.pc {
+    border-color: var(--pc-border, #667eea);
+    border-width: 3px;
+    background: var(--pc-bg, linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%));
+}
+
+.character-card.npc {
+    border-color: var(--npc-border, #48bb78);
+    border-width: 3px;
+    background: var(--npc-bg, linear-gradient(225deg, rgba(72, 187, 120, 0.08) 0%, rgba(56, 161, 105, 0.08) 100%));
+}
+
 .character-card.enemy {
     background: var(--enemy-bg);
     color: var(--enemy-text);
@@ -430,6 +442,12 @@ h1 {
     color: var(--dead-text);
 }
 
+.entity-type-icon {
+    font-size: 1.2em;
+    margin-right: 0.3em;
+    display: inline-block;
+}
+
 .character-header {
     display: flex;
     justify-content: space-between;
@@ -441,6 +459,16 @@ h1 {
     font-size: 1.2rem;
     font-weight: 600;
     flex: 1;
+}
+
+.clickable-name {
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.clickable-name:hover {
+    opacity: 0.7;
+    text-decoration: underline;
 }
 
 .character-controls {
@@ -803,11 +831,62 @@ h1 {
     box-shadow: var(--input-focus-shadow);
 }
 
+/* Entity Type Selector (Radio Buttons) */
+.entity-type-selector {
+    display: flex;
+    gap: 10px;
+}
+
+.radio-label {
+    flex: 1;
+    position: relative;
+}
+
+.radio-label input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    width: 0;
+    height: 0;
+}
+
+.entity-type-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 14px;
+    border: 2px solid var(--input-border);
+    border-radius: var(--radius-md);
+    background: var(--card-bg);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.entity-type-option .entity-type-icon {
+    font-size: 1.1em;
+}
+
+.radio-label:hover .entity-type-option {
+    border-color: var(--bg-primary);
+    background: var(--input-bg);
+}
+
+.radio-label input[type="radio"]:checked + .entity-type-option {
+    border-color: var(--bg-primary);
+    background: rgba(102, 126, 234, 0.1);
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
 /* HP Controls in Modal */
 .hp-controls {
     display: flex;
     gap: var(--spacing-sm);
     align-items: center;
+    justify-content: center;
 }
 
 .hp-controls .hp-display {

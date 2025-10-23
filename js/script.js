@@ -58,6 +58,12 @@ class InitiativeTracker {
         this.stunDecreaseBtn = document.getElementById('stunDecrease');
         this.stunRoundsDisplay = document.getElementById('stunRoundsDisplay');
 
+        // Entity rename modal elements
+        this.renameModal = document.getElementById('renameModal');
+        this.renameInput = document.getElementById('renameInput');
+        this.confirmEntityRenameBtn = document.getElementById('confirmRename');
+        this.cancelEntityRenameBtn = document.getElementById('cancelRename');
+
         // Add modals
         this.addCharacterModal = document.getElementById('addCharacterModal');
         this.addEnemyModal = document.getElementById('addEnemyModal');
@@ -106,8 +112,8 @@ class InitiativeTracker {
 
         this.renameSessionModal = document.getElementById('renameSessionModal');
         this.renameSessionInput = document.getElementById('renameSessionInput');
-        this.confirmRenameBtn = document.getElementById('confirmRenameBtn');
-        this.cancelRenameBtn = document.getElementById('cancelRenameBtn');
+        this.confirmRenameSessionBtn = document.getElementById('confirmRenameBtn');
+        this.cancelRenameSessionBtn = document.getElementById('cancelRenameBtn');
 
         // Clear button
         this.clearAllBtn = document.getElementById('clearAll');
@@ -146,6 +152,15 @@ class InitiativeTracker {
         this.cancelStunBtn.addEventListener('click', () => this.cancelStun());
         this.stunIncreaseBtn.addEventListener('click', () => this.changeStunRounds(1));
         this.stunDecreaseBtn.addEventListener('click', () => this.changeStunRounds(-1));
+        this.confirmEntityRenameBtn.addEventListener('click', () => this.confirmEntityRename());
+        this.cancelEntityRenameBtn.addEventListener('click', () => this.cancelEntityRename());
+
+        // Rename input enter key
+        this.renameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.confirmEntityRename();
+            }
+        });
 
         // Theme selector event
         this.themeSelect.addEventListener('change', (e) => this.changeTheme(e.target.value));
@@ -179,8 +194,8 @@ class InitiativeTracker {
         });
 
         // Rename session modal events
-        this.confirmRenameBtn.addEventListener('click', () => this.confirmRename());
-        this.cancelRenameBtn.addEventListener('click', () => this.hideModal(this.renameSessionModal));
+        this.confirmRenameSessionBtn.addEventListener('click', () => this.confirmRename());
+        this.cancelRenameSessionBtn.addEventListener('click', () => this.hideModal(this.renameSessionModal));
         this.renameSessionInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.confirmRename();
         });
@@ -201,6 +216,12 @@ class InitiativeTracker {
         this.stunModal.addEventListener('click', (e) => {
             if (e.target === this.stunModal) {
                 this.cancelStun();
+            }
+        });
+
+        this.renameModal.addEventListener('click', (e) => {
+            if (e.target === this.renameModal) {
+                this.cancelEntityRename();
             }
         });
 
@@ -234,6 +255,17 @@ class InitiativeTracker {
             }
         });
 
+        // Event delegation for entity name clicks (rename)
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('clickable-name')) {
+                const entityId = e.target.dataset.entityId;
+                if (entityId) {
+                    this.openEntityRenameModal(entityId);
+                }
+                e.stopPropagation();
+            }
+        });
+
         // Event delegation for character controls
         document.addEventListener('click', (e) => {
             const action = e.target.dataset.action;
@@ -244,11 +276,17 @@ class InitiativeTracker {
             e.stopPropagation();
 
             switch (action) {
+                case 'move-to-top':
+                    this.moveToTop(characterId);
+                    break;
                 case 'move-up':
                     this.moveCharacter(characterId, 'up');
                     break;
                 case 'move-down':
                     this.moveCharacter(characterId, 'down');
+                    break;
+                case 'move-to-bottom':
+                    this.moveToBottom(characterId);
                     break;
                 case 'complete':
                     this.completeCharacter(characterId);
@@ -277,6 +315,9 @@ class InitiativeTracker {
                 case 'return-from-dead':
                     this.returnFromDead(characterId);
                     break;
+                case 'convert-type':
+                    this.convertEntityType(characterId);
+                    break;
             }
         });
     }
@@ -285,6 +326,11 @@ class InitiativeTracker {
     openAddCharacterModal() {
         this.generateRandomCharacterName();
         this.modalCharacterHPInput.textContent = '5';
+
+        // Reset entity type selection to PC
+        const pcRadio = document.getElementById('entityTypePC');
+        if (pcRadio) pcRadio.checked = true;
+
         this.showModal(this.addCharacterModal);
         // Focus on name input after modal opens
         setTimeout(() => this.modalCharacterNameInput.focus(), 100);
@@ -310,6 +356,10 @@ class InitiativeTracker {
         const name = this.modalCharacterNameInput.value.trim();
         const hp = parseInt(this.modalCharacterHPInput.textContent);
 
+        // Get selected entity type from radio buttons
+        const entityTypeInput = document.querySelector('input[name="entityType"]:checked');
+        const entityType = entityTypeInput ? entityTypeInput.value : 'pc';
+
         if (!name || isNaN(hp) || hp < 1) {
             alert('Please enter a valid name and hit points (minimum 1)');
             return;
@@ -320,7 +370,8 @@ class InitiativeTracker {
             name: name,
             hp: hp,
             maxHP: hp,
-            isEnemy: false
+            isEnemy: false,
+            entityType: entityType  // Use selected type (pc or npc)
         };
 
         this.characters.push(character);
@@ -343,7 +394,8 @@ class InitiativeTracker {
             name: name,
             hp: hp,
             maxHP: hp,
-            isEnemy: true
+            isEnemy: true,
+            entityType: 'enemy'  // Always enemy type
         };
 
         this.characters.push(enemy);
@@ -433,6 +485,11 @@ class InitiativeTracker {
         const card = document.createElement('div');
         let cardClasses = 'character-card';
 
+        // Add entity type class
+        if (character.entityType) {
+            cardClasses += ` ${character.entityType}`;
+        }
+
         if (character.isEnemy) cardClasses += ' enemy';
         if (isCompleted) cardClasses += ' completed';
         if (statusType === 'stunned') cardClasses += ' stunned';
@@ -441,18 +498,29 @@ class InitiativeTracker {
         card.className = cardClasses;
         card.dataset.characterId = character.id;
 
-        const moveUpBtn = index > 0 ? `<button class="control-btn move-btn" data-action="move-up" data-character-id="${character.id}">↑</button>` : '';
-        const moveDownBtn = index < totalLength - 1 ? `<button class="control-btn move-btn" data-action="move-down" data-character-id="${character.id}">↓</button>` : '';
+        // Entity type icon and conversion button
+        const entityIcon = this.getEntityTypeIcon(character.entityType || 'pc');
+        const convertBtn = (character.entityType !== 'enemy') ?
+            `<button class="control-btn convert-btn" data-action="convert-type" data-character-id="${character.id}" title="${character.entityType === 'pc' ? 'Convert to NPC' : 'Convert to PC'}">🎭</button>` : '';
+
+        // Show appropriate movement buttons based on position
+        const moveToTopBtn = index === totalLength - 1 && totalLength > 1 ? `<button class="control-btn move-btn" data-action="move-to-top" data-character-id="${character.id}" title="Move to top">⏫</button>` : '';
+        const moveUpBtn = index > 0 ? `<button class="control-btn move-btn" data-action="move-up" data-character-id="${character.id}" title="Move up">⬆️</button>` : '';
+        const moveDownBtn = index < totalLength - 1 ? `<button class="control-btn move-btn" data-action="move-down" data-character-id="${character.id}" title="Move down">⬇️</button>` : '';
+        const moveToBottomBtn = index === 0 && totalLength > 1 ? `<button class="control-btn move-btn" data-action="move-to-bottom" data-character-id="${character.id}" title="Move to bottom">⏬</button>` : '';
 
         // Stunned character layout
         if (statusType === 'stunned') {
             const stunRounds = character.stunRounds > 0 ? `<span class="stun-rounds">${character.stunRounds} rounds</span>` : '';
             card.innerHTML = `
                 <div class="character-header">
-                    <div class="character-name">${character.name} ${stunRounds}</div>
+                    <div class="character-name clickable-name" data-entity-id="${character.id}" title="Click to rename"><span class="entity-type-icon">${entityIcon}</span>${character.name} ${stunRounds}</div>
                     <div class="character-controls">
+                        ${convertBtn}
+                        ${moveToTopBtn}
                         ${moveUpBtn}
                         ${moveDownBtn}
+                        ${moveToBottomBtn}
                         <button class="control-btn delete-btn" data-action="delete" data-character-id="${character.id}">✖</button>
                     </div>
                 </div>
@@ -468,10 +536,13 @@ class InitiativeTracker {
         else if (statusType === 'dead') {
             card.innerHTML = `
                 <div class="character-header">
-                    <div class="character-name">${character.name}</div>
+                    <div class="character-name clickable-name" data-entity-id="${character.id}" title="Click to rename"><span class="entity-type-icon">${entityIcon}</span>${character.name}</div>
                     <div class="character-controls">
+                        ${convertBtn}
+                        ${moveToTopBtn}
                         ${moveUpBtn}
                         ${moveDownBtn}
+                        ${moveToBottomBtn}
                         <button class="control-btn delete-btn" data-action="delete" data-character-id="${character.id}">✖</button>
                     </div>
                 </div>
@@ -487,10 +558,13 @@ class InitiativeTracker {
         else if (isCompleted) {
             card.innerHTML = `
                 <div class="character-header">
-                    <div class="character-name">${character.name}</div>
+                    <div class="character-name clickable-name" data-entity-id="${character.id}" title="Click to rename"><span class="entity-type-icon">${entityIcon}</span>${character.name}</div>
                     <div class="character-controls">
+                        ${convertBtn}
+                        ${moveToTopBtn}
                         ${moveUpBtn}
                         ${moveDownBtn}
+                        ${moveToBottomBtn}
                         <button class="control-btn stun-btn" data-action="stun" data-character-id="${character.id}">😵‍💫</button>
                         <button class="control-btn dead-btn" data-action="kill" data-character-id="${character.id}">💀</button>
                         <button class="control-btn delete-btn" data-action="delete" data-character-id="${character.id}">✖</button>
@@ -508,10 +582,13 @@ class InitiativeTracker {
         else {
             card.innerHTML = `
                 <div class="character-header">
-                    <div class="character-name">${character.name}</div>
+                    <div class="character-name clickable-name" data-entity-id="${character.id}" title="Click to rename"><span class="entity-type-icon">${entityIcon}</span>${character.name}</div>
                     <div class="character-controls">
+                        ${convertBtn}
+                        ${moveToTopBtn}
                         ${moveUpBtn}
                         ${moveDownBtn}
+                        ${moveToBottomBtn}
                         <button class="control-btn stun-btn" data-action="stun" data-character-id="${character.id}">😵‍💫</button>
                         <button class="control-btn dead-btn" data-action="kill" data-character-id="${character.id}">💀</button>
                         <button class="control-btn delete-btn" data-action="delete" data-character-id="${character.id}">✖</button>
@@ -554,6 +631,58 @@ class InitiativeTracker {
         // Simple swap in the main array
         [this.characters[characterIndex], this.characters[targetIndex]] =
         [this.characters[targetIndex], this.characters[characterIndex]];
+
+        this.saveData();
+        this.renderCharacters();
+    }
+
+    /**
+     * Move character to the top of the initiative order
+     */
+    moveToTop(characterId) {
+        const onDeckCharacters = this.characters.filter(char => !char.completed);
+        const currentIndex = onDeckCharacters.findIndex(char => char.id == characterId);
+
+        if (currentIndex === -1 || currentIndex === 0) return;
+
+        const character = onDeckCharacters[currentIndex];
+        const characterIndex = this.characters.findIndex(char => char.id == character.id);
+
+        // Remove character from current position
+        const [movedChar] = this.characters.splice(characterIndex, 1);
+
+        // Insert at the beginning (top of on-deck list)
+        const firstOnDeckIndex = this.characters.findIndex(char => !char.completed);
+        this.characters.splice(firstOnDeckIndex, 0, movedChar);
+
+        this.saveData();
+        this.renderCharacters();
+    }
+
+    /**
+     * Move character to the bottom of the initiative order
+     */
+    moveToBottom(characterId) {
+        const onDeckCharacters = this.characters.filter(char => !char.completed);
+        const currentIndex = onDeckCharacters.findIndex(char => char.id == characterId);
+
+        if (currentIndex === -1 || currentIndex === onDeckCharacters.length - 1) return;
+
+        const character = onDeckCharacters[currentIndex];
+        const characterIndex = this.characters.findIndex(char => char.id == character.id);
+
+        // Remove character from current position
+        const [movedChar] = this.characters.splice(characterIndex, 1);
+
+        // Insert at the end of on-deck list (before completed characters)
+        const firstCompletedIndex = this.characters.findIndex(char => char.completed);
+        if (firstCompletedIndex === -1) {
+            // No completed characters, add to end
+            this.characters.push(movedChar);
+        } else {
+            // Insert before first completed character
+            this.characters.splice(firstCompletedIndex, 0, movedChar);
+        }
 
         this.saveData();
         this.renderCharacters();
@@ -692,6 +821,74 @@ class InitiativeTracker {
             this.hideModal(this.deleteModal);
             this.characterToDelete = null;
         }
+    }
+
+    openEntityRenameModal(entityId) {
+        this.entityToRename = entityId;
+        const entity = this.characters.find(char => char.id == entityId);
+        if (entity) {
+            this.renameInput.value = entity.name;
+            this.showModal(this.renameModal);
+            this.renameInput.focus();
+            this.renameInput.select();
+        }
+    }
+
+    confirmEntityRename() {
+        const newName = this.renameInput.value.trim();
+        if (newName && this.entityToRename) {
+            this.renameEntity(this.entityToRename, newName);
+            this.hideModal(this.renameModal);
+            this.entityToRename = null;
+        }
+    }
+
+    cancelEntityRename() {
+        this.hideModal(this.renameModal);
+        this.entityToRename = null;
+    }
+
+    renameEntity(entityId, newName) {
+        const trimmedName = newName.trim();
+        if (!trimmedName) return;
+
+        const entity = this.characters.find(char => char.id == entityId);
+        if (entity) {
+            entity.name = trimmedName;
+            this.saveData();
+            this.renderCharacters();
+        }
+    }
+
+    convertEntityType(entityId) {
+        const entity = this.characters.find(char => char.id == entityId);
+        if (!entity || entity.entityType === 'enemy') {
+            return false; // Can't convert enemies
+        }
+
+        // Toggle between PC and NPC
+        entity.entityType = entity.entityType === 'pc' ? 'npc' : 'pc';
+
+        this.saveData();
+        this.renderCharacters();
+        return true;
+    }
+
+    getEntityTypeIcon(entityType) {
+        const icons = {
+            'pc': '👤',
+            'npc': '🤝',
+            'enemy': '💀'
+        };
+        return icons[entityType] || '';
+    }
+
+    migrateCharacterData(character) {
+        if (!character.entityType) {
+            // Determine type from existing isEnemy flag
+            character.entityType = character.isEnemy ? 'enemy' : 'pc';
+        }
+        return character;
     }
 
     cancelDelete() {
@@ -1236,16 +1433,13 @@ class InitiativeTracker {
         const session = this.sessionManager.getSession(sessionId);
         if (!session) return;
 
-        // Load characters and round
-        this.characters = session.characters || [];
+        // Load characters and round (with migration)
+        this.characters = (session.characters || []).map(char => this.migrateCharacterData(char));
         this.currentRound = session.currentRound || 1;
         this.enemyCounter = session.enemyCounter || 1;
 
-        // Load theme
-        if (session.theme && session.theme !== this.currentTheme) {
-            this.themeSelect.value = session.theme;
-            this.changeTheme(session.theme);
-        }
+        // Don't change theme when loading session - user's theme preference takes priority
+        // Sessions will save in whatever theme the user currently has active
 
         // Render
         this.renderCharacters();
@@ -1542,8 +1736,15 @@ class InitiativeTracker {
     }
 }
 
+// Export for Node.js (CommonJS) if available
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+    module.exports = InitiativeTracker;
+}
+
 // Initialize the tracker when the page loads
 let tracker;
-document.addEventListener('DOMContentLoaded', () => {
-    tracker = new InitiativeTracker();
-});
+if (typeof document !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', () => {
+        tracker = new InitiativeTracker();
+    });
+}

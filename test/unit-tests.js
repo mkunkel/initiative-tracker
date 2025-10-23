@@ -45,6 +45,7 @@ class InitiativeTracker {
             hp: hp,
             maxHP: hp,
             isEnemy: false,
+            entityType: 'pc',  // Default to PC type
             completed: false
         };
 
@@ -66,6 +67,7 @@ class InitiativeTracker {
             hp: hp,
             maxHP: hp,
             isEnemy: true,
+            entityType: 'enemy',  // Always enemy type
             completed: false
         };
 
@@ -130,11 +132,83 @@ class InitiativeTracker {
         [this.characters[targetIndex], this.characters[characterIndex]];
     }
 
+    moveToTop(characterId) {
+        const onDeckCharacters = this.characters.filter(char => !char.completed);
+        const currentIndex = onDeckCharacters.findIndex(char => char.id == characterId);
+
+        if (currentIndex === -1 || currentIndex === 0) return;
+
+        const character = onDeckCharacters[currentIndex];
+        const characterIndex = this.characters.findIndex(char => char.id == character.id);
+
+        const [movedChar] = this.characters.splice(characterIndex, 1);
+
+        const firstOnDeckIndex = this.characters.findIndex(char => !char.completed);
+        this.characters.splice(firstOnDeckIndex, 0, movedChar);
+    }
+
+    moveToBottom(characterId) {
+        const onDeckCharacters = this.characters.filter(char => !char.completed);
+        const currentIndex = onDeckCharacters.findIndex(char => char.id == characterId);
+
+        if (currentIndex === -1 || currentIndex === onDeckCharacters.length - 1) return;
+
+        const character = onDeckCharacters[currentIndex];
+        const characterIndex = this.characters.findIndex(char => char.id == character.id);
+
+        const [movedChar] = this.characters.splice(characterIndex, 1);
+
+        const firstCompletedIndex = this.characters.findIndex(char => char.completed);
+        if (firstCompletedIndex === -1) {
+            this.characters.push(movedChar);
+        } else {
+            this.characters.splice(firstCompletedIndex, 0, movedChar);
+        }
+    }
+
     confirmDelete() {
         if (this.characterToDelete) {
             this.characters = this.characters.filter(char => char.id != this.characterToDelete);
             this.characterToDelete = null;
         }
+    }
+
+    renameEntity(entityId, newName) {
+        const trimmedName = newName.trim();
+        if (!trimmedName) return;
+
+        const entity = this.characters.find(char => char.id == entityId);
+        if (entity) {
+            entity.name = trimmedName;
+        }
+    }
+
+    convertEntityType(entityId) {
+        const entity = this.characters.find(char => char.id == entityId);
+        if (!entity || entity.entityType === 'enemy') {
+            return false; // Can't convert enemies
+        }
+
+        // Toggle between PC and NPC
+        entity.entityType = entity.entityType === 'pc' ? 'npc' : 'pc';
+        return true;
+    }
+
+    getEntityTypeIcon(entityType) {
+        const icons = {
+            'pc': '👤',
+            'npc': '🤝',
+            'enemy': '💀'
+        };
+        return icons[entityType] || '';
+    }
+
+    migrateCharacterData(character) {
+        if (!character.entityType) {
+            // Determine type from existing isEnemy flag
+            character.entityType = character.isEnemy ? 'enemy' : 'pc';
+        }
+        return character;
     }
 
     startNextRound() {
@@ -247,6 +321,71 @@ describe('InitiativeTracker - Unit Tests', function() {
             expect(tracker.characters).to.have.length(1);
             expect(tracker.characters[0].isEnemy).to.be.true;
         });
+
+        it('should rename an entity', function() {
+            // Arrange
+            tracker.characterNameInput.value = 'Original Name';
+            tracker.characterHPInput.value = '10';
+            tracker.addCharacter();
+            const entityId = tracker.characters[0].id;
+
+            // Act
+            tracker.renameEntity(entityId, 'New Name');
+
+            // Assert
+            expect(tracker.characters[0].name).to.equal('New Name');
+            expect(tracker.characters[0].hp).to.equal(10); // HP unchanged
+        });
+
+        it('should not rename with empty name', function() {
+            // Arrange
+            tracker.addCharacter();
+            const entityId = tracker.characters[0].id;
+            const originalName = tracker.characters[0].name;
+
+            // Act
+            tracker.renameEntity(entityId, '');
+
+            // Assert
+            expect(tracker.characters[0].name).to.equal(originalName);
+        });
+
+        it('should not rename with whitespace-only name', function() {
+            // Arrange
+            tracker.addCharacter();
+            const entityId = tracker.characters[0].id;
+            const originalName = tracker.characters[0].name;
+
+            // Act
+            tracker.renameEntity(entityId, '   ');
+
+            // Assert
+            expect(tracker.characters[0].name).to.equal(originalName);
+        });
+
+        it('should trim whitespace when renaming', function() {
+            // Arrange
+            tracker.addCharacter();
+            const entityId = tracker.characters[0].id;
+
+            // Act
+            tracker.renameEntity(entityId, '  Trimmed Name  ');
+
+            // Assert
+            expect(tracker.characters[0].name).to.equal('Trimmed Name');
+        });
+
+        it('should not rename non-existent entity', function() {
+            // Arrange
+            tracker.addCharacter();
+            const originalName = tracker.characters[0].name;
+
+            // Act - try to rename with invalid ID
+            tracker.renameEntity(99999, 'New Name');
+
+            // Assert - original entity unchanged
+            expect(tracker.characters[0].name).to.equal(originalName);
+        });
     });
 
     describe('HP Management', function() {
@@ -293,8 +432,16 @@ describe('InitiativeTracker - Unit Tests', function() {
     describe('Initiative Ordering', function() {
         beforeEach(function() {
             // Add multiple characters for ordering tests
+            tracker.characterNameInput.value = 'Character 1';
+            tracker.characterHPInput.value = '10';
             tracker.addCharacter();
+
+            tracker.characterNameInput.value = 'Character 2';
+            tracker.characterHPInput.value = '10';
             tracker.addCharacter();
+
+            tracker.enemyNameInput.value = 'Enemy 1';
+            tracker.enemyHPInput.value = '8';
             tracker.addEnemy();
         });
 
@@ -343,6 +490,82 @@ describe('InitiativeTracker - Unit Tests', function() {
 
             // Act
             tracker.moveCharacter(characterId, 'down');
+
+            // Assert
+            expect(tracker.characters.map(c => c.id)).to.deep.equal(originalOrder);
+        });
+
+        it('should move character to top of initiative order', function() {
+            // Arrange
+            const characterId = tracker.characters[2].id; // Last character
+            const originalFirst = tracker.characters[0].id;
+
+            // Act
+            tracker.moveToTop(characterId);
+
+            // Assert
+            expect(tracker.characters[0].id).to.equal(characterId);
+            expect(tracker.characters[1].id).to.equal(originalFirst);
+            expect(tracker.characters).to.have.length(3);
+        });
+
+        it('should move character to bottom of initiative order', function() {
+            // Arrange
+            const characterId = tracker.characters[0].id; // First character
+            const originalLast = tracker.characters[2].id;
+
+            // Act
+            tracker.moveToBottom(characterId);
+
+            // Assert
+            expect(tracker.characters[2].id).to.equal(characterId);
+            expect(tracker.characters[1].id).to.equal(originalLast);
+            expect(tracker.characters).to.have.length(3);
+        });
+
+        it('should not change order when moving top character to top', function() {
+            // Arrange
+            const characterId = tracker.characters[0].id;
+            const originalOrder = tracker.characters.map(c => c.id);
+
+            // Act
+            tracker.moveToTop(characterId);
+
+            // Assert
+            expect(tracker.characters.map(c => c.id)).to.deep.equal(originalOrder);
+        });
+
+        it('should not change order when moving bottom character to bottom', function() {
+            // Arrange
+            const characterId = tracker.characters[2].id;
+            const originalOrder = tracker.characters.map(c => c.id);
+
+            // Act
+            tracker.moveToBottom(characterId);
+
+            // Assert
+            expect(tracker.characters.map(c => c.id)).to.deep.equal(originalOrder);
+        });
+
+        it('should handle moveToTop with single character', function() {
+            // Arrange
+            tracker.characters = [{ id: 1, name: 'Solo', hp: 10 }];
+            const originalOrder = tracker.characters.map(c => c.id);
+
+            // Act
+            tracker.moveToTop(1);
+
+            // Assert
+            expect(tracker.characters.map(c => c.id)).to.deep.equal(originalOrder);
+        });
+
+        it('should handle moveToBottom with single character', function() {
+            // Arrange
+            tracker.characters = [{ id: 1, name: 'Solo', hp: 10 }];
+            const originalOrder = tracker.characters.map(c => c.id);
+
+            // Act
+            tracker.moveToBottom(1);
 
             // Assert
             expect(tracker.characters.map(c => c.id)).to.deep.equal(originalOrder);
@@ -454,6 +677,194 @@ describe('InitiativeTracker - Unit Tests', function() {
             expect(() => tracker.changeHP('invalid-id', 1)).to.not.throw();
             expect(() => tracker.completeCharacter('invalid-id')).to.not.throw();
             expect(() => tracker.returnToDeck('invalid-id')).to.not.throw();
+        });
+    });
+
+    describe('Entity Type System', function() {
+        beforeEach(function() {
+            tracker = new InitiativeTracker();
+        });
+
+        describe('Entity Type Initialization', function() {
+            it('should default new characters to PC type', function() {
+                // Arrange
+                tracker.characterNameInput.value = 'Test Character';
+                tracker.characterHPInput.value = '10';
+
+                // Act
+                tracker.addCharacter();
+
+                // Assert
+                expect(tracker.characters).to.have.length(1);
+                expect(tracker.characters[0].entityType).to.equal('pc');
+                expect(tracker.characters[0].isEnemy).to.be.false;
+            });
+
+            it('should set enemies to enemy type', function() {
+                // Arrange
+                tracker.enemyNameInput.value = 'Test Enemy';
+                tracker.enemyHPInput.value = '8';
+
+                // Act
+                tracker.addEnemy();
+
+                // Assert
+                expect(tracker.characters).to.have.length(1);
+                expect(tracker.characters[0].entityType).to.equal('enemy');
+                expect(tracker.characters[0].isEnemy).to.be.true;
+            });
+        });
+
+        describe('Entity Type Conversion', function() {
+            it('should convert PC to NPC', function() {
+                // Arrange
+                tracker.characterNameInput.value = 'Test PC';
+                tracker.characterHPInput.value = '10';
+                tracker.addCharacter();
+                const entityId = tracker.characters[0].id;
+
+                // Act
+                const result = tracker.convertEntityType(entityId);
+
+                // Assert
+                expect(result).to.be.true;
+                expect(tracker.characters[0].entityType).to.equal('npc');
+            });
+
+            it('should convert NPC to PC', function() {
+                // Arrange
+                tracker.characterNameInput.value = 'Test NPC';
+                tracker.characterHPInput.value = '10';
+                tracker.addCharacter();
+                tracker.characters[0].entityType = 'npc'; // Set to NPC first
+                const entityId = tracker.characters[0].id;
+
+                // Act
+                const result = tracker.convertEntityType(entityId);
+
+                // Assert
+                expect(result).to.be.true;
+                expect(tracker.characters[0].entityType).to.equal('pc');
+            });
+
+            it('should not convert enemies', function() {
+                // Arrange
+                tracker.enemyNameInput.value = 'Test Enemy';
+                tracker.enemyHPInput.value = '8';
+                tracker.addEnemy();
+                const entityId = tracker.characters[0].id;
+
+                // Act
+                const result = tracker.convertEntityType(entityId);
+
+                // Assert
+                expect(result).to.be.false;
+                expect(tracker.characters[0].entityType).to.equal('enemy');
+            });
+
+            it('should return false for non-existent entity', function() {
+                // Act
+                const result = tracker.convertEntityType('non-existent-id');
+
+                // Assert
+                expect(result).to.be.false;
+            });
+
+            it('should preserve all entity data during conversion', function() {
+                // Arrange
+                tracker.characterNameInput.value = 'Test PC';
+                tracker.characterHPInput.value = '10';
+                tracker.addCharacter();
+                const entity = tracker.characters[0];
+                entity.completed = true;
+                entity.hp = 5;
+                const entityId = entity.id;
+
+                // Act
+                tracker.convertEntityType(entityId);
+
+                // Assert
+                expect(tracker.characters[0].name).to.equal('Test PC');
+                expect(tracker.characters[0].hp).to.equal(5);
+                expect(tracker.characters[0].maxHP).to.equal(10);
+                expect(tracker.characters[0].completed).to.be.true;
+                expect(tracker.characters[0].entityType).to.equal('npc');
+            });
+        });
+
+        describe('Entity Type Icons', function() {
+            it('should return correct icon for PC', function() {
+                expect(tracker.getEntityTypeIcon('pc')).to.equal('👤');
+            });
+
+            it('should return correct icon for NPC', function() {
+                expect(tracker.getEntityTypeIcon('npc')).to.equal('🤝');
+            });
+
+            it('should return correct icon for Enemy', function() {
+                expect(tracker.getEntityTypeIcon('enemy')).to.equal('💀');
+            });
+
+            it('should return empty string for unknown type', function() {
+                expect(tracker.getEntityTypeIcon('unknown')).to.equal('');
+            });
+        });
+
+        describe('Data Migration', function() {
+            it('should migrate character without entityType to PC', function() {
+                // Arrange
+                const oldCharacter = {
+                    id: 1,
+                    name: 'Old Character',
+                    hp: 10,
+                    maxHP: 10,
+                    isEnemy: false,
+                    completed: false
+                };
+
+                // Act
+                const migrated = tracker.migrateCharacterData(oldCharacter);
+
+                // Assert
+                expect(migrated.entityType).to.equal('pc');
+            });
+
+            it('should migrate enemy without entityType to enemy', function() {
+                // Arrange
+                const oldEnemy = {
+                    id: 2,
+                    name: 'Old Enemy',
+                    hp: 8,
+                    maxHP: 8,
+                    isEnemy: true,
+                    completed: false
+                };
+
+                // Act
+                const migrated = tracker.migrateCharacterData(oldEnemy);
+
+                // Assert
+                expect(migrated.entityType).to.equal('enemy');
+            });
+
+            it('should not modify character that already has entityType', function() {
+                // Arrange
+                const newCharacter = {
+                    id: 3,
+                    name: 'New Character',
+                    hp: 10,
+                    maxHP: 10,
+                    isEnemy: false,
+                    entityType: 'npc',
+                    completed: false
+                };
+
+                // Act
+                const migrated = tracker.migrateCharacterData(newCharacter);
+
+                // Assert
+                expect(migrated.entityType).to.equal('npc');
+            });
         });
     });
 });

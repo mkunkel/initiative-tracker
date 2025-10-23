@@ -47,6 +47,14 @@
     --enemy-bg: linear-gradient(135deg, #5a1a3e 0%, #7a2050 100%);
     --enemy-text: #ef4796;
 
+    /* Entity Type Border Colors */
+    --pc-border: #EF4796;  /* Bright pink */
+    --npc-border: #19AFD0;  /* Sky blue */
+
+    /* Entity Type Background Colors */
+    --pc-bg: linear-gradient(135deg, rgba(239, 71, 150, 0.12) 0%, rgba(200, 50, 120, 0.12) 100%);
+    --npc-bg: linear-gradient(225deg, rgba(25, 175, 208, 0.12) 0%, rgba(20, 140, 170, 0.12) 100%);
+
     /* Control Button Colors */
     --control-bg: rgba(239, 71, 150, 0.2);
     --control-hover: rgba(239, 71, 150, 0.4);

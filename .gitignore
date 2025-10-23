@@ -49,3 +49,7 @@ build/
 docs/planning/
 docs/features/
 
+# User game config overrides
+data/games/overrides/*.json
+!data/games/overrides/.keep
+

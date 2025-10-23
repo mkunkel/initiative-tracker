@@ -1,0 +1,79 @@
+{
+  "id": "cy-borg",
+  "name": "CY_BORG",
+  "themeFile": "themes/theme-cy-borg.css",
+  "version": "1.0",
+  "description": "Cyberpunk initiative tracker",
+
+  "enemyNaming": {
+    "strategy": "generated"
+  },
+
+  "resources": {
+    "primary": {
+      "name": "hp",
+      "displayName": "Hit Points",
+      "min": 0,
+      "max": null,
+      "default": 5,
+      "causesDeathAtMin": true,
+      "showInCard": true,
+      "controls": {
+        "increment": 1,
+        "decrement": 1,
+        "allowNegative": false
+      }
+    }
+  },
+
+  "entityTypes": {
+    "pc": {
+      "enabled": true,
+      "label": "PC",
+      "icon": "👤",
+      "takeTurns": true
+    },
+    "npc": {
+      "enabled": true,
+      "label": "NPC",
+      "icon": "🤝",
+      "takeTurns": true
+    },
+    "enemy": {
+      "enabled": true,
+      "label": "Enemy",
+      "icon": "💀",
+      "takeTurns": true
+    }
+  },
+
+  "roundRules": {
+    "endWhen": "all-turn-takers-complete",
+    "description": "Round ends when all entities have taken their turn"
+  },
+
+  "names": {
+    "format": "[{prefix} ]{handle|callsign}[ {suffix}]",
+    "prefix": [
+      "Zero", "Prime", "Omega", "Alpha", "Beta", "Delta", "Sigma", "Gamma"
+    ],
+    "handle": [
+      "Razor", "Neon", "Glitch", "Chrome", "Spike", "Blade", "Echo", "Volt",
+      "Nova", "Byte", "Ghost", "Axe", "Pulse", "Vex", "Cipher", "Hack",
+      "Rogue", "Flux", "Edge", "Wire"
+    ],
+    "callsign": [
+      "Crash", "Loop", "Trace", "Switch", "Node", "Pixel", "Vector", "Matrix",
+      "Daemon", "Kernel", "Circuit", "Binary"
+    ],
+    "suffix": [
+      "2077", "X", "Prime", "Zero", "Max", "Core", "Nine", "Red", "Black", "V", "Omega", "Beta"
+    ]
+  },
+
+  "enemyNaming": {
+    "type": "incremental",
+    "prefix": "Enemy"
+  }
+}
+

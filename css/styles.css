@@ -113,6 +113,7 @@ body {
 header {
     text-align: center;
     margin-bottom: var(--spacing-xxl);
+    position: relative;
 }
 
 h1 {
@@ -121,6 +122,39 @@ h1 {
     margin-bottom: var(--spacing-lg);
     text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     font-weight: 300;
+}
+
+/* Total Attack Indicator */
+.total-attack-indicator {
+    background: rgba(220, 38, 38, 0.15);
+    border: 3px solid var(--danger-color);
+    border-radius: var(--radius-lg);
+    padding: 16px 28px;
+    box-shadow: 0 0 20px rgba(220, 38, 38, 0.3), var(--shadow-lg);
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 auto var(--spacing-md) auto;
+}
+
+.total-attack-label {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-inverse);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.total-attack-value {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--danger-color);
+    min-width: 40px;
+    text-align: center;
+    text-shadow: 0 0 10px rgba(220, 38, 38, 0.8),
+                 1px 1px 3px rgba(0, 0, 0, 0.8);
+    filter: drop-shadow(0 0 8px rgba(220, 38, 38, 0.6));
 }
 
 /* Top Controls (Theme Selector and Clear Button) */
@@ -134,7 +168,7 @@ h1 {
     gap: var(--spacing-md);
 }
 
-.theme-selector {
+.theme-selector, .game-selector {
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
@@ -146,13 +180,13 @@ h1 {
     border: 1px solid var(--card-border);
 }
 
-.theme-selector label {
+.theme-selector label, .game-selector label {
     color: var(--text-secondary);
     font-size: var(--font-size-small);
     font-weight: 500;
 }
 
-.theme-selector select {
+.theme-selector select, .game-selector select {
     padding: var(--spacing-xs) var(--spacing-sm);
     border: 2px solid var(--input-border);
     border-radius: var(--radius-sm);
@@ -163,7 +197,7 @@ h1 {
     transition: all 0.3s ease;
 }
 
-.theme-selector select:focus {
+.theme-selector select:focus, .game-selector select:focus {
     outline: none;
     border-color: var(--input-border-focus);
     box-shadow: var(--input-focus-shadow);
@@ -932,6 +966,226 @@ h1 {
 .hp-btn:disabled:hover {
     background: var(--control-bg);
     transform: none;
+}
+
+/* Tracker Styles */
+.tracker-groups {
+    width: 100%;
+    margin: 8px 0;
+}
+
+.tracker-group {
+    margin-bottom: 8px;
+}
+
+.tracker-group-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tracker-items {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.tracker-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.tracker-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: center;
+    min-width: 32px;
+}
+
+.tracker-checkboxes {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tracker-checkboxes input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--bg-primary);
+}
+
+/* Enemy Subtype Styles */
+.character-card[data-enemy-subtype="threat"] {
+    border-left: 6px solid #ff6b6b !important;
+    background: linear-gradient(135deg,
+        rgba(255, 107, 107, 0.25) 0%,
+        rgba(255, 107, 107, 0.15) 50%,
+        rgba(255, 107, 107, 0.1) 100%) !important;
+    box-shadow: 0 0 15px rgba(255, 107, 107, 0.3), inset 0 0 30px rgba(255, 107, 107, 0.1);
+}
+
+.character-card[data-enemy-subtype="objective"] {
+    border-left: 6px solid #51cf66 !important;
+    background: linear-gradient(135deg,
+        rgba(81, 207, 102, 0.25) 0%,
+        rgba(81, 207, 102, 0.15) 50%,
+        rgba(81, 207, 102, 0.1) 100%) !important;
+    box-shadow: 0 0 15px rgba(81, 207, 102, 0.3), inset 0 0 30px rgba(81, 207, 102, 0.1);
+}
+
+/* Active threats and objectives should not appear faded */
+.character-card[data-enemy-subtype="threat"],
+.character-card[data-enemy-subtype="objective"]:not(.objective-completed) {
+    opacity: 1 !important;
+    color: var(--text-primary) !important;
+}
+
+.character-card[data-enemy-subtype="objective"].objective-completed {
+    opacity: 0.7;
+    border-left-color: #868e96 !important;
+    background: linear-gradient(135deg, rgba(134, 142, 150, 0.2) 0%, rgba(134, 142, 150, 0.1) 100%) !important;
+}
+
+.enemy-attributes {
+    display: flex;
+    gap: 12px;
+    margin: 8px 0;
+    flex-wrap: wrap;
+}
+
+.attribute-control {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.attribute-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.attribute-value-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.attribute-btn {
+    background: var(--btn-secondary-bg);
+    border: 1px solid var(--input-border);
+    color: var(--text-primary);
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.attribute-btn:hover {
+    background: var(--bg-primary);
+    color: var(--text-inverse);
+    transform: scale(1.1);
+}
+
+.attribute-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    min-width: 30px;
+    text-align: center;
+}
+
+.primary-toggle-btn {
+    background: var(--btn-secondary-bg);
+    border: 2px solid var(--input-border);
+    color: var(--text-secondary);
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.primary-toggle-btn:hover {
+    border-color: var(--bg-primary);
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.primary-toggle-btn.is-primary {
+    background: #51cf66;
+    color: #000;
+    border-color: #51cf66;
+    font-weight: 700;
+    box-shadow: 0 0 10px rgba(81, 207, 102, 0.5);
+}
+
+.primary-toggle-btn .primary-icon {
+    font-size: 1.1rem;
+    margin-right: 4px;
+}
+
+/* Enemy Subtype Selector (in modal) */
+.enemy-subtype-selector {
+    display: flex;
+    gap: 10px;
+}
+
+.enemy-subtype-selector .radio-label {
+    flex: 1;
+    position: relative;
+}
+
+.enemy-subtype-selector input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.enemy-subtype-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 14px;
+    border: 2px solid var(--input-border);
+    border-radius: var(--radius-md);
+    background: var(--card-bg);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.enemy-subtype-selector .radio-label:hover .enemy-subtype-option {
+    border-color: var(--bg-primary);
+    background: var(--input-bg);
+}
+
+.enemy-subtype-selector input[type="radio"]:checked + .enemy-subtype-option {
+    border-color: var(--bg-primary);
+    background: rgba(102, 126, 234, 0.1);
+    color: var(--text-primary);
+    font-weight: 600;
 }
 
 /* Modal Button Styles */

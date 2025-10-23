@@ -3,6 +3,8 @@ class InitiativeTracker {
     constructor() {
         this.characters = []; // Single array for all characters and enemies
         this.enemyCounter = 1;
+        this.threatCounter = 1;
+        this.objectiveCounter = 1;
         this.currentRound = 1;
         this.characterToDelete = null;
         this.characterToStun = null;
@@ -25,17 +27,39 @@ class InitiativeTracker {
         this.sessionToRename = null;
         this.sessionToDelete = null;
 
-        // Initialize SessionManager
+        // Initialize managers
         this.sessionManager = new SessionManager();
+        this.configManager = new GameConfigManager();
+        this.gameConfig = null; // Current game configuration
+        this.currentGameId = 'default'; // Default game
 
         this.initializeElements();
         this.bindEvents();
         this.setupThemes();
+        this.populateGameSelector(); // Populate game selector
         this.checkForExpiredSessions(); // Check for cleanup before loading
-        this.loadSavedTheme();
+        this.loadGameConfig(this.currentGameId); // Load default game config (theme will be set from config)
         this.loadCharacterNames();
         this.loadSavedData();
         this.populateSessionSelector();
+    }
+
+    async loadGameConfig(gameId) {
+        this.gameConfig = await this.configManager.loadConfig(gameId);
+        this.currentGameId = gameId;
+
+        // Auto-switch theme based on game config
+        if (this.gameConfig?.themeFile) {
+            const themePath = this.gameConfig.themeFile;
+            if (this.themes.has(themePath)) {
+                this.changeTheme(themePath);
+            }
+        } else {
+            // Default theme if no theme specified
+            this.changeTheme('default');
+        }
+
+        return this.gameConfig;
     }
 
     initializeElements() {
@@ -79,8 +103,8 @@ class InitiativeTracker {
         this.modalAddEnemyBtn = document.getElementById('modalAddEnemy');
         this.cancelEnemyModalBtn = document.getElementById('cancelEnemyModal');
 
-        // Theme selector
-        this.themeSelect = document.getElementById('themeSelect');
+        // Game selector (theme selector removed - theme is determined by game)
+        this.gameSelect = document.getElementById('gameSelect');
 
         // Session selector
         this.sessionSelect = document.getElementById('sessionSelect');
@@ -162,8 +186,8 @@ class InitiativeTracker {
             }
         });
 
-        // Theme selector event
-        this.themeSelect.addEventListener('change', (e) => this.changeTheme(e.target.value));
+        // Game selector event (theme changes automatically with game)
+        this.gameSelect.addEventListener('change', (e) => this.changeGame(e.target.value));
 
         // Clear all button event
         this.clearAllBtn.addEventListener('click', () => this.clearAll());
@@ -245,12 +269,24 @@ class InitiativeTracker {
                 const hpDisplay = document.getElementById(modalType === 'character' ? 'modalCharacterHP' : 'modalEnemyHP');
 
                 if (hpDisplay) {
-                    const currentValue = parseInt(hpDisplay.textContent) || 1;
+                    // Get resource constraints from game config
+                    const min = this.gameConfig?.resources?.primary?.min ?? 0;
+                    const max = this.gameConfig?.resources?.primary?.max ?? null;
+
+                    const currentValue = parseInt(hpDisplay.textContent) || min;
+                    let newValue = currentValue;
+
                     if (action === 'increase') {
-                        hpDisplay.textContent = currentValue + 1;
+                        newValue = currentValue + 1;
+                        // Apply max constraint if it exists
+                        if (max !== null) {
+                            newValue = Math.min(newValue, max);
+                        }
                     } else if (action === 'decrease') {
-                        hpDisplay.textContent = Math.max(1, currentValue - 1);
+                        newValue = Math.max(min, currentValue - 1);
                     }
+
+                    hpDisplay.textContent = newValue;
                 }
             }
         });
@@ -268,8 +304,12 @@ class InitiativeTracker {
 
         // Event delegation for character controls
         document.addEventListener('click', (e) => {
-            const action = e.target.dataset.action;
-            const characterId = e.target.dataset.characterId;
+            // Use closest to handle clicks on child elements (e.g., spans inside buttons)
+            const actionElement = e.target.closest('[data-action]');
+            if (!actionElement) return;
+
+            const action = actionElement.dataset.action;
+            const characterId = actionElement.dataset.characterId;
 
             if (!action || !characterId) return;
 
@@ -318,6 +358,28 @@ class InitiativeTracker {
                 case 'convert-type':
                     this.convertEntityType(characterId);
                     break;
+                case 'toggle-tracker':
+                    const trackerId = actionElement.dataset.trackerId;
+                    const index = parseInt(actionElement.dataset.index);
+                    if (trackerId && index >= 0) {
+                        this.updateTracker(characterId, trackerId, index, actionElement.checked);
+                    }
+                    break;
+                case 'attribute-increase':
+                    const attrIdInc = actionElement.dataset.attributeId;
+                    if (attrIdInc) {
+                        this.changeAttribute(characterId, attrIdInc, 1);
+                    }
+                    break;
+                case 'attribute-decrease':
+                    const attrIdDec = actionElement.dataset.attributeId;
+                    if (attrIdDec) {
+                        this.changeAttribute(characterId, attrIdDec, -1);
+                    }
+                    break;
+                case 'toggle-primary':
+                    this.togglePrimaryObjective(characterId);
+                    break;
             }
         });
     }
@@ -325,15 +387,74 @@ class InitiativeTracker {
     // Modal management methods
     openAddCharacterModal() {
         this.generateRandomCharacterName();
-        this.modalCharacterHPInput.textContent = '5';
 
-        // Reset entity type selection to PC
-        const pcRadio = document.getElementById('entityTypePC');
-        if (pcRadio) pcRadio.checked = true;
+        // Check if resource field should be shown in modal
+        const showResourceInModal = this.gameConfig?.resources?.primary?.showInModal !== false;
+        const characterHPField = document.getElementById('characterHPField');
+
+        // Debug logging
+        console.log('Opening Character Modal:', {
+            gameId: this.currentGameId,
+            showInModal: this.gameConfig?.resources?.primary?.showInModal,
+            showResourceInModal: showResourceInModal
+        });
+
+        if (characterHPField) {
+            characterHPField.style.display = showResourceInModal ? 'flex' : 'none';
+        }
+
+        if (showResourceInModal) {
+            // Set default resource value
+            const defaultValue = this.gameConfig?.resources?.primary?.default ?? 5;
+            this.modalCharacterHPInput.textContent = defaultValue;
+
+            // Update resource label
+            const resourceLabel = document.getElementById('characterResourceLabel');
+            if (resourceLabel) {
+                resourceLabel.textContent = this.gameConfig?.resources?.primary?.displayName || 'Hit Points';
+            }
+        }
+
+        // Render entity type selector based on game config
+        this.renderEntityTypeSelector();
 
         this.showModal(this.addCharacterModal);
         // Focus on name input after modal opens
         setTimeout(() => this.modalCharacterNameInput.focus(), 100);
+    }
+
+    renderEntityTypeSelector() {
+        const selector = document.querySelector('.entity-type-selector');
+        if (!selector) return;
+
+        // Get enabled non-enemy types
+        const enabledTypes = this.getEnabledEntityTypes().filter(t => t !== 'enemy');
+
+        if (enabledTypes.length === 0) {
+            selector.innerHTML = '<p>No character types available</p>';
+            return;
+        }
+
+        let html = '';
+        for (let i = 0; i < enabledTypes.length; i++) {
+            const type = enabledTypes[i];
+            const config = this.gameConfig?.entityTypes?.[type];
+            const icon = config?.icon || (type === 'pc' ? '👤' : '🤝');
+            const label = config?.label || type.toUpperCase();
+            const title = type === 'pc' ? 'Player Character' : 'Non-Player Character';
+            const checked = i === 0 ? 'checked' : '';
+
+            html += `
+                <label class="radio-label" title="${title}">
+                    <input type="radio" name="entityType" value="${type}" id="entityType${type.toUpperCase()}" ${checked}>
+                    <div class="entity-type-option">
+                        <span class="entity-type-icon">${icon}</span> ${label}
+                    </div>
+                </label>
+            `;
+        }
+
+        selector.innerHTML = html;
     }
 
     closeAddCharacterModal() {
@@ -341,11 +462,89 @@ class InitiativeTracker {
     }
 
     openAddEnemyModal() {
-        this.modalEnemyNameInput.value = `Enemy ${this.enemyCounter}`;
-        this.modalEnemyHPInput.textContent = '5';
+        // Render enemy subtype selector first (if game has subtypes)
+        this.renderEnemySubtypeSelector();
+
+        // Get the default selected subtype (if any)
+        const subtypeInput = document.querySelector('input[name="enemySubtype"]:checked');
+        const defaultSubtype = subtypeInput ? subtypeInput.value : null;
+
+        // Set enemy name based on config strategy and subtype
+        this.modalEnemyNameInput.value = this.generateEnemyName(defaultSubtype);
+
+        // Check if resource field should be shown in modal
+        const showResourceInModal = this.gameConfig?.resources?.primary?.showInModal !== false;
+        const enemyHPField = document.getElementById('enemyHPField');
+
+        // Debug logging
+        console.log('Opening Enemy Modal:', {
+            gameId: this.currentGameId,
+            showInModal: this.gameConfig?.resources?.primary?.showInModal,
+            showResourceInModal: showResourceInModal
+        });
+
+        if (enemyHPField) {
+            enemyHPField.style.display = showResourceInModal ? 'flex' : 'none';
+        }
+
+        if (showResourceInModal) {
+            // Set default resource value
+            const defaultValue = this.gameConfig?.resources?.primary?.default ?? 5;
+            this.modalEnemyHPInput.textContent = defaultValue;
+
+            // Update resource label
+            const resourceLabel = document.getElementById('enemyResourceLabel');
+            if (resourceLabel) {
+                resourceLabel.textContent = this.gameConfig?.resources?.primary?.displayName || 'Hit Points';
+            }
+        }
+
         this.showModal(this.addEnemyModal);
         // Focus on name input after modal opens
         setTimeout(() => this.modalEnemyNameInput.focus(), 100);
+    }
+
+    renderEnemySubtypeSelector() {
+        const field = document.getElementById('enemySubtypeField');
+        const selector = document.querySelector('.enemy-subtype-selector');
+
+        if (!field || !selector) return;
+
+        // Check if game has enemy subtypes
+        if (!this.gameConfig?.enemySubtypes) {
+            field.style.display = 'none';
+            return;
+        }
+
+        // Show field and populate selector
+        field.style.display = 'block';
+
+        let html = '';
+        let firstSubtype = true;
+        for (const [subtypeId, config] of Object.entries(this.gameConfig.enemySubtypes)) {
+            const checked = firstSubtype ? 'checked' : '';
+            const icon = config.icon || '❓';
+            const label = config.label || subtypeId;
+
+            html += `
+                <label class="radio-label">
+                    <input type="radio" name="enemySubtype" value="${subtypeId}" ${checked}>
+                    <div class="enemy-subtype-option">
+                        <span>${icon}</span> ${label}
+                    </div>
+                </label>
+            `;
+            firstSubtype = false;
+        }
+
+        selector.innerHTML = html;
+
+        // Add event listener to update enemy name when subtype changes
+        selector.querySelectorAll('input[name="enemySubtype"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                this.modalEnemyNameInput.value = this.generateEnemyName(e.target.value);
+            });
+        });
     }
 
     closeAddEnemyModal() {
@@ -354,22 +553,46 @@ class InitiativeTracker {
 
     addCharacterFromModal() {
         const name = this.modalCharacterNameInput.value.trim();
-        const hp = parseInt(this.modalCharacterHPInput.textContent);
 
         // Get selected entity type from radio buttons
         const entityTypeInput = document.querySelector('input[name="entityType"]:checked');
         const entityType = entityTypeInput ? entityTypeInput.value : 'pc';
 
-        if (!name || isNaN(hp) || hp < 1) {
-            alert('Please enter a valid name and hit points (minimum 1)');
+        if (!name) {
+            alert('Please enter a valid name');
             return;
+        }
+
+        // Check if resource field is shown in modal
+        const showResourceInModal = this.gameConfig?.resources?.primary?.showInModal !== false;
+        let resourceValue;
+
+        if (showResourceInModal) {
+            resourceValue = parseInt(this.modalCharacterHPInput.textContent);
+            const minValue = this.gameConfig?.resources?.primary?.min ?? 1;
+
+            if (isNaN(resourceValue) || resourceValue < minValue) {
+                const resourceName = this.gameConfig?.resources.primary.displayName || 'Hit Points';
+                alert(`Please enter a valid ${resourceName} (minimum ${minValue})`);
+                return;
+            }
+        } else {
+            // Use default value from config when field is hidden
+            resourceValue = this.gameConfig?.resources?.primary?.default ?? 5;
         }
 
         const character = {
             id: Date.now() + Math.random(),
             name: name,
-            hp: hp,
-            maxHP: hp,
+            primaryResource: {
+                value: resourceValue,
+                max: resourceValue,
+                name: this.gameConfig?.resources.primary.name || 'hp'
+            },
+            trackers: this.initializeTrackers(entityType),
+            completed: false,
+            stunned: false,
+            dead: false,
             isEnemy: false,
             entityType: entityType  // Use selected type (pc or npc)
         };
@@ -382,26 +605,75 @@ class InitiativeTracker {
 
     addEnemyFromModal() {
         const name = this.modalEnemyNameInput.value.trim();
-        const hp = parseInt(this.modalEnemyHPInput.textContent);
 
-        if (!name || isNaN(hp) || hp < 1) {
-            alert('Please enter a valid name and hit points (minimum 1)');
+        if (!name) {
+            alert('Please enter a valid name');
             return;
         }
+
+        // Check if resource field is shown in modal
+        const showResourceInModal = this.gameConfig?.resources?.primary?.showInModal !== false;
+        let resourceValue;
+
+        if (showResourceInModal) {
+            resourceValue = parseInt(this.modalEnemyHPInput.textContent);
+            const minValue = this.gameConfig?.resources?.primary?.min ?? 1;
+
+            if (isNaN(resourceValue) || resourceValue < minValue) {
+                const resourceName = this.gameConfig?.resources.primary.displayName || 'Hit Points';
+                alert(`Please enter a valid ${resourceName} (minimum ${minValue})`);
+                return;
+            }
+        } else {
+            // Use default value from config when field is hidden
+            resourceValue = this.gameConfig?.resources?.primary?.default ?? 5;
+        }
+
+        // Get selected enemy subtype if available
+        const subtypeInput = document.querySelector('input[name="enemySubtype"]:checked');
+        const enemySubtype = subtypeInput ? subtypeInput.value : null;
+
+        // Check if this enemy subtype should start completed
+        const subtypeConfig = enemySubtype ? this.getEnemySubtypeConfig(enemySubtype) : null;
+        const startsCompleted = subtypeConfig?.startsCompleted || false;
 
         const enemy = {
             id: Date.now() + Math.random(),
             name: name,
-            hp: hp,
-            maxHP: hp,
+            primaryResource: {
+                value: resourceValue,
+                max: resourceValue,
+                name: this.gameConfig?.resources.primary.name || 'hp'
+            },
+            trackers: this.initializeTrackers('enemy'),
+            completed: startsCompleted,
+            stunned: false,
+            dead: false,
             isEnemy: true,
             entityType: 'enemy'  // Always enemy type
         };
 
+        // Add subtype and attributes if game supports them
+        if (enemySubtype) {
+            enemy.enemySubtype = enemySubtype;
+            enemy.attributes = this.initializeEnemyAttributes(enemySubtype);
+            enemy.isPrimary = false; // Objectives can be marked primary
+            enemy.objectiveCompleted = false; // Objectives can be completed
+        }
+
         this.characters.push(enemy);
         this.saveData();
         this.renderCharacters();
-        this.enemyCounter++;
+
+        // Increment the appropriate counter
+        if (enemySubtype === 'threat') {
+            this.threatCounter++;
+        } else if (enemySubtype === 'objective') {
+            this.objectiveCounter++;
+        } else {
+            this.enemyCounter++;
+        }
+
         this.closeAddEnemyModal();
     }
 
@@ -412,9 +684,30 @@ class InitiativeTracker {
     renderCharacters() {
         this.renderOnDeck();
         this.renderCompleted();
+        this.renderCompletedObjectives();
         this.renderStunned();
         this.renderDead();
+        this.updateTotalAttackIndicator();
         this.checkRoundComplete();
+    }
+
+    updateTotalAttackIndicator() {
+        const indicator = document.getElementById('totalAttackIndicator');
+        if (!indicator) return;
+
+        // Only show for games with threat system
+        if (!this.gameConfig?.enemySubtypes?.threat) {
+            indicator.style.display = 'none';
+            return;
+        }
+
+        // Show and update value
+        const totalAttack = this.calculateTotalAttack();
+        const valueElement = indicator.querySelector('.total-attack-value');
+        if (valueElement) {
+            valueElement.textContent = totalAttack;
+        }
+        indicator.style.display = 'flex';
     }
 
     renderOnDeck() {
@@ -436,7 +729,14 @@ class InitiativeTracker {
     renderCompleted() {
         this.completedList.innerHTML = '';
 
-        const completedCharacters = this.characters.filter(char => char.completed && !char.stunned && !char.dead);
+        let completedCharacters = this.characters.filter(char =>
+            char.completed && !char.stunned && !char.dead && !char.objectiveCompleted
+        );
+
+        // Apply custom sorting if game config specifies it
+        if (this.gameConfig?.sections) {
+            completedCharacters = this.applySectionSorting(completedCharacters, 'completed');
+        }
 
         if (completedCharacters.length === 0) {
             this.completedList.innerHTML = '<div class="empty-state">No completed characters</div>';
@@ -447,6 +747,63 @@ class InitiativeTracker {
             const characterCard = this.createCharacterCard(character, index, completedCharacters.length, true);
             this.completedList.appendChild(characterCard);
         });
+    }
+
+    renderCompletedObjectives() {
+        const section = document.getElementById('completedObjectivesSection');
+        const list = document.getElementById('completedObjectivesList');
+
+        if (!section || !list) return;
+
+        // Only show for games with objectives
+        if (!this.gameConfig?.enemySubtypes?.objective) {
+            section.style.display = 'none';
+            return;
+        }
+
+        const completedObjectives = this.getCompletedObjectives();
+
+        if (completedObjectives.length === 0) {
+            section.style.display = 'none';
+            return;
+        }
+
+        // Show section and render objectives
+        section.style.display = 'block';
+        list.innerHTML = '';
+
+        // Sort objectives (primary first)
+        const sorted = this.sortObjectives(completedObjectives);
+
+        sorted.forEach((objective, index) => {
+            const card = this.createCharacterCard(objective, index, sorted.length, true);
+            list.appendChild(card);
+        });
+    }
+
+    applySectionSorting(characters, sectionId) {
+        // sections is an object with keys, not an array
+        const sectionConfig = this.gameConfig.sections?.[sectionId];
+        if (!sectionConfig || !sectionConfig.sortOrder) {
+            return characters;
+        }
+
+        // Custom sorting logic for Eat the Reich
+        if (this.gameConfig.id === 'eat-the-reich' && sectionId === 'completed') {
+            // Separate by type
+            const objectives = characters.filter(c => c.enemySubtype === 'objective');
+            const threats = characters.filter(c => c.enemySubtype === 'threat');
+            const others = characters.filter(c => !c.enemySubtype);
+
+            // Sort each group
+            const sortedObjectives = this.sortObjectives(objectives);
+            const sortedThreats = this.sortThreats(threats);
+
+            // Combine: Objectives first, then Threats, then others
+            return [...sortedObjectives, ...sortedThreats, ...others];
+        }
+
+        return characters;
     }
 
     renderStunned() {
@@ -498,16 +855,46 @@ class InitiativeTracker {
         card.className = cardClasses;
         card.dataset.characterId = character.id;
 
+        // Add enemy subtype data attribute if applicable
+        if (character.enemySubtype) {
+            card.dataset.enemySubtype = character.enemySubtype;
+            if (character.objectiveCompleted) {
+                card.classList.add('objective-completed');
+            }
+        }
+
         // Entity type icon and conversion button
         const entityIcon = this.getEntityTypeIcon(character.entityType || 'pc');
-        const convertBtn = (character.entityType !== 'enemy') ?
+        const convertBtn = (character.entityType !== 'enemy' && this.canConvertEntityType(character.entityType)) ?
             `<button class="control-btn convert-btn" data-action="convert-type" data-character-id="${character.id}" title="${character.entityType === 'pc' ? 'Convert to NPC' : 'Convert to PC'}">🎭</button>` : '';
+
+        // Render enemy attributes if applicable
+        const attributesHTML = character.entityType === 'enemy' ? this.renderEnemyAttributes(character) : '';
+        const trackersHTML = this.renderTrackers(character);
+
+        // Check if resource (HP/Blood) should be shown for this entity
+        const showResource = this.shouldShowResource(character);
 
         // Show appropriate movement buttons based on position
         const moveToTopBtn = index === totalLength - 1 && totalLength > 1 ? `<button class="control-btn move-btn" data-action="move-to-top" data-character-id="${character.id}" title="Move to top">⏫</button>` : '';
         const moveUpBtn = index > 0 ? `<button class="control-btn move-btn" data-action="move-up" data-character-id="${character.id}" title="Move up">⬆️</button>` : '';
         const moveDownBtn = index < totalLength - 1 ? `<button class="control-btn move-btn" data-action="move-down" data-character-id="${character.id}" title="Move down">⬇️</button>` : '';
         const moveToBottomBtn = index === 0 && totalLength > 1 ? `<button class="control-btn move-btn" data-action="move-to-bottom" data-character-id="${character.id}" title="Move to bottom">⏬</button>` : '';
+
+        // HP/Resource section (conditionally shown)
+        const hpSectionCompleted = showResource ? `
+            <div class="hp-section hp-section-completed">
+                <button class="hp-btn" data-action="hp-decrease" data-character-id="${character.id}">-</button>
+                <div class="hp-display">${character.primaryResource?.value ?? character.hp ?? 0}</div>
+                <button class="hp-btn" data-action="hp-increase" data-character-id="${character.id}">+</button>
+            </div>` : '';
+
+        const hpSectionOnDeck = showResource ? `
+            <div class="hp-section">
+                <button class="hp-btn" data-action="hp-decrease" data-character-id="${character.id}">-</button>
+                <div class="hp-display">${character.primaryResource?.value ?? character.hp ?? 0}</div>
+                <button class="hp-btn" data-action="hp-increase" data-character-id="${character.id}">+</button>
+            </div>` : '';
 
         // Stunned character layout
         if (statusType === 'stunned') {
@@ -524,11 +911,9 @@ class InitiativeTracker {
                         <button class="control-btn delete-btn" data-action="delete" data-character-id="${character.id}">✖</button>
                     </div>
                 </div>
-                <div class="hp-section hp-section-completed">
-                    <button class="hp-btn" data-action="hp-decrease" data-character-id="${character.id}">-</button>
-                    <div class="hp-display">${character.hp}</div>
-                    <button class="hp-btn" data-action="hp-increase" data-character-id="${character.id}">+</button>
-                </div>
+                ${attributesHTML}
+                ${trackersHTML}
+                ${hpSectionCompleted}
                 <button class="return-btn-large" data-action="return-from-stunned" data-character-id="${character.id}">←</button>
             `;
         }
@@ -546,16 +931,18 @@ class InitiativeTracker {
                         <button class="control-btn delete-btn" data-action="delete" data-character-id="${character.id}">✖</button>
                     </div>
                 </div>
-                <div class="hp-section hp-section-completed">
-                    <button class="hp-btn" data-action="hp-decrease" data-character-id="${character.id}">-</button>
-                    <div class="hp-display">${character.hp}</div>
-                    <button class="hp-btn" data-action="hp-increase" data-character-id="${character.id}">+</button>
-                </div>
+                ${attributesHTML}
+                ${trackersHTML}
+                ${hpSectionCompleted}
                 <button class="return-btn-large" data-action="return-from-dead" data-character-id="${character.id}">←</button>
             `;
         }
         // Completed character layout
         else if (isCompleted) {
+            // Check if this is a threat/objective that shouldn't have a return arrow
+            const hasSubtype = character.enemySubtype && (character.enemySubtype === 'threat' || character.enemySubtype === 'objective');
+            const returnBtn = hasSubtype ? '' : `<button class="return-btn-large" data-action="return-to-deck" data-character-id="${character.id}">←</button>`;
+
             card.innerHTML = `
                 <div class="character-header">
                     <div class="character-name clickable-name" data-entity-id="${character.id}" title="Click to rename"><span class="entity-type-icon">${entityIcon}</span>${character.name}</div>
@@ -570,12 +957,10 @@ class InitiativeTracker {
                         <button class="control-btn delete-btn" data-action="delete" data-character-id="${character.id}">✖</button>
                     </div>
                 </div>
-                <div class="hp-section hp-section-completed">
-                    <button class="hp-btn" data-action="hp-decrease" data-character-id="${character.id}">-</button>
-                    <div class="hp-display">${character.hp}</div>
-                    <button class="hp-btn" data-action="hp-increase" data-character-id="${character.id}">+</button>
-                </div>
-                <button class="return-btn-large" data-action="return-to-deck" data-character-id="${character.id}">←</button>
+                ${attributesHTML}
+                ${trackersHTML}
+                ${hpSectionCompleted}
+                ${returnBtn}
             `;
         }
         // On deck character layout
@@ -594,11 +979,9 @@ class InitiativeTracker {
                         <button class="control-btn delete-btn" data-action="delete" data-character-id="${character.id}">✖</button>
                     </div>
                 </div>
-                <div class="hp-section">
-                    <button class="hp-btn" data-action="hp-decrease" data-character-id="${character.id}">-</button>
-                    <div class="hp-display">${character.hp}</div>
-                    <button class="hp-btn" data-action="hp-increase" data-character-id="${character.id}">+</button>
-                </div>
+                ${attributesHTML}
+                ${trackersHTML}
+                ${hpSectionOnDeck}
                 <button class="complete-btn-large" data-action="complete" data-character-id="${character.id}">→</button>
             `;
         }
@@ -790,22 +1173,44 @@ class InitiativeTracker {
     }
 
     changeHP(characterId, change) {
-        const character = this.characters.find(char => char.id == characterId);
-        if (character) {
-            character.hp = Math.max(0, character.hp + change);
+        let character = this.characters.find(char => char.id == characterId);
+        if (!character) return;
 
-            // Automatically move to dead if HP reaches 0
-            if (character.hp === 0 && !character.dead) {
-                character.dead = true;
-                character.completed = false;
-                character.stunned = false;
-                character.stunnedThisRound = false;
-                character.stunRounds = 0;
+        // Migrate old HP format if needed
+        this.migrateCharacterData(character);
+
+        const primary = this.gameConfig?.resources?.primary;
+        const min = primary?.min !== undefined ? primary.min : 0;
+
+        // Handle max constraint
+        let newValue;
+        if (change > 0) {
+            // Increasing
+            if (primary && primary.max === null) {
+                // No max limit
+                newValue = character.primaryResource.value + change;
+            } else {
+                const max = primary?.max !== undefined ? primary.max : character.primaryResource.max;
+                newValue = Math.min(character.primaryResource.value + change, max);
             }
-
-            this.saveData();
-            this.renderCharacters();
+        } else {
+            // Decreasing
+            newValue = Math.max(min, character.primaryResource.value + change);
         }
+
+        character.primaryResource.value = newValue;
+
+        // Automatically move to dead if resource reaches min AND config says it causes death
+        if (primary?.causesDeathAtMin && character.primaryResource.value === min && !character.dead) {
+            character.dead = true;
+            character.completed = false;
+            character.stunned = false;
+            character.stunnedThisRound = false;
+            character.stunRounds = 0;
+        }
+
+        this.saveData();
+        this.renderCharacters();
     }
 
     deleteCharacter(characterId) {
@@ -866,6 +1271,11 @@ class InitiativeTracker {
             return false; // Can't convert enemies
         }
 
+        // Check if conversion is allowed by game config
+        if (!this.canConvertEntityType(entity.entityType)) {
+            return false;
+        }
+
         // Toggle between PC and NPC
         entity.entityType = entity.entityType === 'pc' ? 'npc' : 'pc';
 
@@ -874,7 +1284,41 @@ class InitiativeTracker {
         return true;
     }
 
+    getEnabledEntityTypes() {
+        if (!this.gameConfig?.entityTypes) {
+            return ['pc', 'npc', 'enemy'];
+        }
+
+        const enabled = [];
+        for (const [type, config] of Object.entries(this.gameConfig.entityTypes)) {
+            if (config.enabled !== false) {
+                enabled.push(type);
+            }
+        }
+        return enabled;
+    }
+
+    isEntityTypeEnabled(type) {
+        if (!this.gameConfig?.entityTypes || !this.gameConfig.entityTypes[type]) {
+            return true; // Default to enabled
+        }
+        return this.gameConfig.entityTypes[type].enabled !== false;
+    }
+
+    canConvertEntityType(entityType) {
+        if (entityType === 'enemy') return false;
+
+        // Check if both PC and NPC are enabled
+        return this.isEntityTypeEnabled('pc') && this.isEntityTypeEnabled('npc');
+    }
+
     getEntityTypeIcon(entityType) {
+        // Use icon from game config if available
+        if (this.gameConfig?.entityTypes?.[entityType]?.icon) {
+            return this.gameConfig.entityTypes[entityType].icon;
+        }
+
+        // Fallback to default icons
         const icons = {
             'pc': '👤',
             'npc': '🤝',
@@ -883,12 +1327,334 @@ class InitiativeTracker {
         return icons[entityType] || '';
     }
 
+    // Enemy Subtype System Methods
+
+    getEnemySubtypeConfig(subtype) {
+        if (!this.gameConfig?.enemySubtypes) return null;
+        return this.gameConfig.enemySubtypes[subtype];
+    }
+
+    initializeEnemyAttributes(subtype) {
+        const config = this.getEnemySubtypeConfig(subtype);
+        if (!config || !config.attributes) return {};
+
+        const attributes = {};
+        for (const attr of config.attributes) {
+            attributes[attr.id] = attr.default;
+        }
+        return attributes;
+    }
+
+    changeAttribute(enemyId, attributeId, change) {
+        const enemy = this.characters.find(c => c.id == enemyId);
+        if (!enemy || !enemy.attributes) return false;
+
+        const config = this.getEnemySubtypeConfig(enemy.enemySubtype);
+        if (!config) return false;
+
+        const attrConfig = config.attributes.find(a => a.id === attributeId);
+        if (!attrConfig) return false;
+
+        const currentValue = enemy.attributes[attributeId] || 0;
+        let newValue = currentValue + change;
+
+        // Apply constraints
+        if (attrConfig.min !== undefined) {
+            newValue = Math.max(attrConfig.min, newValue);
+        }
+        if (attrConfig.max !== undefined && attrConfig.max !== null) {
+            newValue = Math.min(attrConfig.max, newValue);
+        }
+
+        enemy.attributes[attributeId] = newValue;
+
+        // Check if objective completed (rating reached 0)
+        if (enemy.enemySubtype === 'objective' && attributeId === 'rating' && newValue === 0) {
+            enemy.objectiveCompleted = true;
+        }
+
+        this.saveData();
+        this.renderCharacters();
+        return true;
+    }
+
+    setPrimaryObjective(objectiveId) {
+        // Clear all primary flags
+        this.characters.forEach(c => {
+            if (c.enemySubtype === 'objective') {
+                c.isPrimary = false;
+            }
+        });
+
+        // Set new primary
+        const objective = this.characters.find(c => c.id == objectiveId);
+        if (objective && objective.enemySubtype === 'objective') {
+            objective.isPrimary = true;
+            this.saveData();
+            this.renderCharacters();
+            return true;
+        }
+        return false;
+    }
+
+    togglePrimaryObjective(objectiveId) {
+        const objective = this.characters.find(c => c.id == objectiveId);
+        if (!objective || objective.enemySubtype !== 'objective') return false;
+
+        if (objective.isPrimary) {
+            // Toggle off
+            objective.isPrimary = false;
+        } else {
+            // Toggle on (clear others first)
+            this.setPrimaryObjective(objectiveId);
+        }
+
+        this.saveData();
+        this.renderCharacters();
+        return true;
+    }
+
+    getThreats() {
+        return this.characters.filter(c => c.enemySubtype === 'threat' && !c.dead);
+    }
+
+    getObjectives() {
+        return this.characters.filter(c => c.enemySubtype === 'objective' && !c.dead);
+    }
+
+    getCompletedObjectives() {
+        return this.characters.filter(c => c.enemySubtype === 'objective' && c.objectiveCompleted && !c.dead);
+    }
+
+    calculateTotalAttack() {
+        const threats = this.getThreats();
+        if (threats.length === 0) return 0;
+
+        const attacks = threats.map(t => t.attributes?.attack || 0);
+        const highestAttack = Math.max(...attacks);
+        const otherThreatsCount = threats.length - 1;
+
+        return highestAttack + otherThreatsCount;
+    }
+
+    sortThreats(threats) {
+        return [...threats].sort((a, b) => {
+            const attackA = a.attributes?.attack || 0;
+            const attackB = b.attributes?.attack || 0;
+            return attackB - attackA; // Descending
+        });
+    }
+
+    sortObjectives(objectives) {
+        return [...objectives].sort((a, b) => {
+            // Primary objectives first
+            if (a.isPrimary && !b.isPrimary) return -1;
+            if (!a.isPrimary && b.isPrimary) return 1;
+            return 0; // Otherwise keep order
+        });
+    }
+
     migrateCharacterData(character) {
+        // Migrate entity type
         if (!character.entityType) {
             // Determine type from existing isEnemy flag
             character.entityType = character.isEnemy ? 'enemy' : 'pc';
         }
+
+        // Migrate HP to primaryResource format
+        if ('hp' in character && !character.primaryResource) {
+            character.primaryResource = {
+                value: character.hp,
+                max: character.maxHP || character.hp,
+                name: 'hp'
+            };
+            delete character.hp;
+            delete character.maxHP;
+        }
+
+        // Initialize trackers if missing
+        if (!character.trackers) {
+            character.trackers = this.initializeTrackers(character.entityType);
+        }
+
         return character;
+    }
+
+    initializeTrackers(entityType) {
+        if (!this.gameConfig?.customTrackers) {
+            return {};
+        }
+
+        const trackers = {};
+        for (const tracker of this.gameConfig.customTrackers) {
+            // Check if this tracker applies to this entity type
+            const applies =
+                (entityType === 'pc' && tracker.appliesToPC) ||
+                (entityType === 'npc' && tracker.appliesToNPC) ||
+                (entityType === 'enemy' && tracker.appliesToEnemy);
+
+            if (applies) {
+                if (tracker.type === 'checkbox') {
+                    // Initialize array of false values
+                    trackers[tracker.id] = new Array(tracker.count).fill(false);
+                }
+            }
+        }
+        return trackers;
+    }
+
+    updateTracker(characterId, trackerId, index, value) {
+        const char = this.characters.find(c => c.id == characterId);
+        if (!char || !char.trackers || !char.trackers[trackerId]) {
+            return false;
+        }
+
+        if (index < 0 || index >= char.trackers[trackerId].length) {
+            return false;
+        }
+
+        char.trackers[trackerId][index] = value;
+        this.saveData();
+        this.renderCharacters();
+        return true;
+    }
+
+    getTrackerValue(characterId, trackerId, index) {
+        const char = this.characters.find(c => c.id == characterId);
+        if (!char || !char.trackers || !char.trackers[trackerId]) {
+            return null;
+        }
+
+        return char.trackers[trackerId][index];
+    }
+
+    getApplicableTrackers(entityType) {
+        if (!this.gameConfig?.customTrackers) {
+            return [];
+        }
+
+        return this.gameConfig.customTrackers.filter(tracker => {
+            if (entityType === 'pc') return tracker.appliesToPC;
+            if (entityType === 'npc') return tracker.appliesToNPC;
+            if (entityType === 'enemy') return tracker.appliesToEnemy;
+            return false;
+        });
+    }
+
+    renderTrackers(character) {
+        const applicableTrackers = this.getApplicableTrackers(character.entityType);
+
+        if (applicableTrackers.length === 0 || !character.trackers) {
+            return '';
+        }
+
+        // Group trackers by groupLabel
+        const groups = {};
+        for (const trackerConfig of applicableTrackers) {
+            const groupLabel = trackerConfig.groupLabel || 'Trackers';
+            if (!groups[groupLabel]) {
+                groups[groupLabel] = [];
+            }
+            groups[groupLabel].push(trackerConfig);
+        }
+
+        // Render each group
+        let html = '<div class="tracker-groups">';
+        for (const [groupLabel, trackerConfigs] of Object.entries(groups)) {
+            html += `<div class="tracker-group">`;
+            html += `<div class="tracker-group-label">${groupLabel}</div>`;
+            html += `<div class="tracker-items">`;
+
+            for (const trackerConfig of trackerConfigs) {
+                const trackerState = character.trackers[trackerConfig.id] || [];
+                html += `<div class="tracker-item">`;
+                html += `<div class="tracker-label">${trackerConfig.label}</div>`;
+                html += `<div class="tracker-checkboxes">`;
+
+                for (let i = 0; i < trackerConfig.count; i++) {
+                    const checked = trackerState[i] ? 'checked' : '';
+                    html += `<input type="checkbox" ${checked}
+                             data-action="toggle-tracker"
+                             data-character-id="${character.id}"
+                             data-tracker-id="${trackerConfig.id}"
+                             data-index="${i}">`;
+                }
+
+                html += `</div>`;
+                html += `</div>`;
+            }
+
+            html += `</div>`;
+            html += `</div>`;
+        }
+        html += '</div>';
+
+        return html;
+    }
+
+    shouldShowResource(character) {
+        // Check config to see if resource applies to this entity type
+        const resourceConfig = this.gameConfig?.resources?.primary;
+
+        if (!resourceConfig) return true; // Default: show resource
+
+        // If config specifies applicability, check it
+        if (character.entityType === 'pc' && resourceConfig.appliesToPC === false) return false;
+        if (character.entityType === 'npc' && resourceConfig.appliesToNPC === false) return false;
+        if (character.entityType === 'enemy' && resourceConfig.appliesToEnemy === false) return false;
+
+        return true; // Default: show resource
+    }
+
+    renderEnemyAttributes(enemy) {
+        if (!enemy.enemySubtype || !enemy.attributes) {
+            return '';
+        }
+
+        const subtypeConfig = this.getEnemySubtypeConfig(enemy.enemySubtype);
+        if (!subtypeConfig || !subtypeConfig.attributes) {
+            return '';
+        }
+
+        let html = '<div class="enemy-attributes">';
+
+        // Render each attribute with +/- controls
+        for (const attrConfig of subtypeConfig.attributes) {
+            if (attrConfig.type === 'counter') {
+                const value = enemy.attributes[attrConfig.id] || 0;
+                html += `
+                    <div class="attribute-control">
+                        <div class="attribute-label">${attrConfig.label}</div>
+                        <div class="attribute-value-controls">
+                            <button class="attribute-btn" data-action="attribute-decrease"
+                                    data-character-id="${enemy.id}"
+                                    data-attribute-id="${attrConfig.id}">−</button>
+                            <div class="attribute-value">${value}</div>
+                            <button class="attribute-btn" data-action="attribute-increase"
+                                    data-character-id="${enemy.id}"
+                                    data-attribute-id="${attrConfig.id}">+</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Add primary toggle for objectives
+        if (enemy.enemySubtype === 'objective') {
+            const isPrimaryClass = enemy.isPrimary ? 'is-primary' : '';
+            const icon = enemy.isPrimary ? '⭐' : '☆';
+            html += `
+                <button class="primary-toggle-btn ${isPrimaryClass}"
+                        data-action="toggle-primary"
+                        data-character-id="${enemy.id}">
+                    <span class="primary-icon">${icon}</span>
+                    <span>Primary</span>
+                </button>
+            `;
+        }
+
+        html += '</div>';
+        return html;
     }
 
     cancelDelete() {
@@ -897,22 +1663,60 @@ class InitiativeTracker {
     }
 
     checkRoundComplete() {
-        // Only check active characters (not dead or stunned)
-        const activeCharacters = this.characters.filter(char => !char.dead && !char.stunned);
-        const completedCharacters = activeCharacters.filter(char => char.completed);
+        if (!this.gameConfig?.entityTypes) {
+            // Fallback: all active characters must complete
+            const activeCharacters = this.characters.filter(char => !char.dead && !char.stunned);
+            const completedCharacters = activeCharacters.filter(char => char.completed);
 
-        if (activeCharacters.length > 0 && completedCharacters.length === activeCharacters.length) {
+            if (activeCharacters.length > 0 && completedCharacters.length === activeCharacters.length) {
+                this.showModal(this.roundCompleteModal);
+            }
+            return;
+        }
+
+        // Get entities that take turns (excluding dead/stunned)
+        const turnTakers = this.getEntitiesThatTakeTurns();
+
+        // Round is complete when all turn-takers are complete
+        if (turnTakers.length > 0 && turnTakers.every(c => c.completed)) {
             this.showModal(this.roundCompleteModal);
         }
+    }
+
+    getEntitiesThatTakeTurns() {
+        if (!this.gameConfig?.entityTypes) {
+            return this.characters.filter(c => !c.dead && !c.stunned);
+        }
+
+        return this.characters.filter(c => {
+            if (c.dead || c.stunned) return false;
+
+            const entityConfig = this.gameConfig.entityTypes[c.entityType];
+            return entityConfig && entityConfig.takeTurns;
+        });
     }
 
     startNextRound() {
         // Increment round counter
         this.currentRound++;
 
-        // Reset all characters to not completed
+        // Reset characters based on game config
         this.characters.forEach(char => {
-            char.completed = false;
+            // Determine if this entity should be reset
+            let shouldReset = false;
+
+            if (!this.gameConfig?.entityTypes) {
+                // Fallback: reset all characters
+                shouldReset = true;
+            } else {
+                // Only reset entities that take turns
+                const entityConfig = this.gameConfig.entityTypes[char.entityType];
+                shouldReset = entityConfig && entityConfig.takeTurns;
+            }
+
+            if (shouldReset) {
+                char.completed = false;
+            }
 
             // Countdown stun rounds for stunned characters
             if (char.stunned && char.stunRounds > 0) {
@@ -956,6 +1760,8 @@ class InitiativeTracker {
 
         // Reset counters
         this.enemyCounter = 1;
+        this.threatCounter = 1;
+        this.objectiveCounter = 1;
         this.currentRound = 1;
 
         // Save cleared state
@@ -983,8 +1789,7 @@ class InitiativeTracker {
             this.themes.set(theme.file, theme.name);
         });
 
-        // Populate theme selector
-        this.populateThemeSelector(availableThemes);
+        // Theme selector removed - themes are now determined by game config
         console.log('Themes loaded:', availableThemes);
     }
 
@@ -993,17 +1798,46 @@ class InitiativeTracker {
         return match ? match[1].trim() : null;
     }
 
-    populateThemeSelector(themes) {
-        // Clear existing options except default
-        this.themeSelect.innerHTML = '<option value="default">Default</option>';
+    // populateThemeSelector() method removed - theme is determined by game config
 
-        // Add discovered themes
-        themes.forEach(theme => {
+    populateGameSelector() {
+        // List of available games
+        const games = [
+            { id: 'default', name: 'Default' },
+            { id: 'mork-borg', name: 'Mörk Borg' },
+            { id: 'cy-borg', name: 'CY_BORG' },
+            { id: 'pirate-borg', name: 'Pirate Borg' },
+            { id: 'corp-borg', name: 'Corp Borg' },
+            { id: 'eat-the-reich', name: 'Eat the Reich' }
+        ];
+
+        this.gameSelect.innerHTML = '';
+        games.forEach(game => {
             const option = document.createElement('option');
-            option.value = theme.file;
-            option.textContent = theme.name;
-            this.themeSelect.appendChild(option);
+            option.value = game.id;
+            option.textContent = game.name;
+            this.gameSelect.appendChild(option);
         });
+
+        // Set initial selection
+        this.gameSelect.value = this.currentGameId || 'default';
+    }
+
+    async changeGame(gameId) {
+        if (!gameId || gameId === this.currentGameId) return;
+
+        // Load the new game config
+        await this.loadGameConfig(gameId);
+
+        // Update current session with new gameId
+        if (this.sessionManager.currentSessionId) {
+            this.sessionManager.updateSession(this.sessionManager.currentSessionId, {
+                gameId: gameId
+            });
+        }
+
+        // Re-render everything to apply new config
+        this.renderCharacters();
     }
 
     changeTheme(themeFile) {
@@ -1047,14 +1881,8 @@ class InitiativeTracker {
         }
     }
 
-    loadSavedTheme() {
-        const savedTheme = localStorage.getItem('initiative-tracker-theme');
-
-        if (savedTheme && savedTheme !== 'default' && this.themes.has(savedTheme)) {
-            this.themeSelect.value = savedTheme;
-            this.changeTheme(savedTheme);
-        }
-    }
+    // Theme is now determined by game config, not saved separately
+    // loadSavedTheme() method removed
 
     // Data Persistence Methods
     saveData() {
@@ -1098,6 +1926,30 @@ class InitiativeTracker {
     }
 
     // Random Name Generation
+    generateEnemyName(enemySubtype = null) {
+        const namingConfig = this.gameConfig?.enemyNaming;
+
+        // For threats and objectives, always use subtype-specific naming
+        if (enemySubtype === 'threat') {
+            return `Threat ${this.threatCounter}`;
+        } else if (enemySubtype === 'objective') {
+            return `Objective ${this.objectiveCounter}`;
+        }
+
+        // For regular enemies, use config strategy
+        if (!namingConfig || namingConfig.strategy === 'incremental') {
+            // Incremental naming (Enemy 1, Enemy 2, etc.)
+            const template = namingConfig?.template || 'Enemy {counter}';
+            return template.replace('{counter}', this.enemyCounter);
+        } else if (namingConfig.strategy === 'generated') {
+            // Use name generation system (like character names)
+            return this.generateRandomCharacterName();
+        }
+
+        // Fallback to incremental
+        return `Enemy ${this.enemyCounter}`;
+    }
+
     generateRandomCharacterName() {
         const nameData = this.characterNames[this.currentTheme] || this.characterNames['default'];
 
@@ -1429,14 +2281,25 @@ class InitiativeTracker {
         this.loadSessionData(sessionId);
     }
 
-    loadSessionData(sessionId) {
+    async loadSessionData(sessionId) {
         const session = this.sessionManager.getSession(sessionId);
         if (!session) return;
+
+        // Load game config for this session
+        const gameId = session.gameId || 'default';
+        await this.loadGameConfig(gameId);
+
+        // Update game selector to match
+        if (this.gameSelect) {
+            this.gameSelect.value = gameId;
+        }
 
         // Load characters and round (with migration)
         this.characters = (session.characters || []).map(char => this.migrateCharacterData(char));
         this.currentRound = session.currentRound || 1;
         this.enemyCounter = session.enemyCounter || 1;
+        this.threatCounter = session.threatCounter || 1;
+        this.objectiveCounter = session.objectiveCounter || 1;
 
         // Don't change theme when loading session - user's theme preference takes priority
         // Sessions will save in whatever theme the user currently has active
@@ -1453,7 +2316,10 @@ class InitiativeTracker {
             characters: this.characters,
             currentRound: this.currentRound,
             enemyCounter: this.enemyCounter,
-            theme: this.currentTheme
+            threatCounter: this.threatCounter,
+            objectiveCounter: this.objectiveCounter,
+            theme: this.currentTheme,
+            gameId: this.currentGameId
         });
     }
 
@@ -1578,7 +2444,7 @@ class InitiativeTracker {
             return;
         }
 
-        const sessionId = this.sessionManager.createSession(name, 'campaign', this.currentTheme);
+        const sessionId = this.sessionManager.createSession(name, 'campaign', this.currentTheme, this.currentGameId);
         this.sessionManager.setCurrentSessionId(sessionId);
 
         this.hideModal(this.newCampaignModal);
@@ -1589,11 +2455,13 @@ class InitiativeTracker {
         this.characters = [];
         this.currentRound = 1;
         this.enemyCounter = 1;
+        this.threatCounter = 1;
+        this.objectiveCounter = 1;
         this.renderCharacters();
     }
 
     createQuickGame() {
-        const sessionId = this.sessionManager.createSession('Quick Game', 'quick', this.currentTheme);
+        const sessionId = this.sessionManager.createSession('Quick Game', 'quick', this.currentTheme, this.currentGameId);
         this.sessionManager.setCurrentSessionId(sessionId);
 
         this.hideModal(this.manageSessionsModal);
@@ -1603,6 +2471,8 @@ class InitiativeTracker {
         this.characters = [];
         this.currentRound = 1;
         this.enemyCounter = 1;
+        this.threatCounter = 1;
+        this.objectiveCounter = 1;
         this.renderCharacters();
     }
 

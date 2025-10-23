@@ -179,30 +179,43 @@
         }
 
         function runTestSuite(type) {
-            // Load the session manager first
-            const sessionScript = document.createElement('script');
-            sessionScript.src = '../js/session-manager.js';
-            sessionScript.onload = () => {
-                // Then load the main application script
-                const script = document.createElement('script');
-                script.src = '../js/script.js';
-                script.onload = () => {
-                    // Load test files based on type
-                    const testFiles = getTestFiles(type);
-                    loadTestFiles(testFiles, () => {
-                        // Run the tests
-                        mocha.run((failures) => {
-                            updateTestSummary(failures);
+            // Load game-config first
+            const gameConfigScript = document.createElement('script');
+            gameConfigScript.src = '../js/game-config.js';
+            gameConfigScript.onload = () => {
+                // Then load the session manager
+                const sessionScript = document.createElement('script');
+                sessionScript.src = '../js/session-manager.js';
+                sessionScript.onload = () => {
+                    // Then load the main application script
+                    const script = document.createElement('script');
+                    script.src = '../js/script.js';
+                    script.onload = () => {
+                        // Load test files based on type
+                        const testFiles = getTestFiles(type);
+                        loadTestFiles(testFiles, () => {
+                            // Run the tests
+                            mocha.run((failures) => {
+                                updateTestSummary(failures);
+                            });
                         });
-                    });
+                    };
+                    document.head.appendChild(script);
                 };
-                document.head.appendChild(script);
+                document.head.appendChild(sessionScript);
             };
-            document.head.appendChild(sessionScript);
+            document.head.appendChild(gameConfigScript);
         }
 
         function getTestFiles(type) {
             const allTests = [
+                'game-config-tests.js',
+                'dynamic-resource-tests.js',
+                'custom-tracker-tests.js',
+                'entity-type-config-tests.js',
+                'round-rules-tests.js',
+                'enemy-subtype-tests.js',
+                'modal-resource-field-tests.js',
                 'session-manager-tests.js',
                 'unit-tests.js',
                 'integration-tests.js',
@@ -212,7 +225,7 @@
             ];
 
             switch(type) {
-                case 'unit': return ['session-manager-tests.js', 'unit-tests.js'];
+                case 'unit': return ['game-config-tests.js', 'dynamic-resource-tests.js', 'custom-tracker-tests.js', 'entity-type-config-tests.js', 'round-rules-tests.js', 'enemy-subtype-tests.js', 'modal-resource-field-tests.js', 'session-manager-tests.js', 'unit-tests.js'];
                 case 'integration': return ['integration-tests.js', 'ui-tests.js'];
                 case 'theme': return ['theme-tests.js'];
                 default: return allTests;

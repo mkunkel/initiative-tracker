@@ -1,0 +1,245 @@
+{
+  "id": "eat-the-reich",
+  "name": "Eat the Reich",
+  "themeFile": "themes/theme-eat-the-reich.css",
+  "version": "1.0",
+  "description": "Vampire commandos vs Nazi vampires",
+
+  "enemyNaming": {
+    "strategy": "incremental",
+    "template": "Enemy {counter}"
+  },
+
+  "resources": {
+    "primary": {
+      "name": "blood",
+      "displayName": "Blood",
+      "min": 0,
+      "max": 10,
+      "default": 0,
+      "causesDeathAtMin": false,
+      "showInCard": true,
+      "showInModal": false,
+      "appliesToPC": true,
+      "appliesToNPC": true,
+      "appliesToEnemy": false,
+      "controls": {
+        "increment": 1,
+        "decrement": 1,
+        "allowNegative": false
+      }
+    }
+  },
+
+  "customTrackers": [
+    {
+      "id": "injuries-1-2",
+      "label": "1-2",
+      "type": "checkbox",
+      "count": 2,
+      "appliesToPC": true,
+      "appliesToNPC": false,
+      "appliesToEnemy": false,
+      "groupLabel": "Injuries"
+    },
+    {
+      "id": "injuries-2-3",
+      "label": "2-3",
+      "type": "checkbox",
+      "count": 2,
+      "appliesToPC": true,
+      "appliesToNPC": false,
+      "appliesToEnemy": false,
+      "groupLabel": "Injuries"
+    },
+    {
+      "id": "injuries-3-4",
+      "label": "3-4",
+      "type": "checkbox",
+      "count": 2,
+      "appliesToPC": true,
+      "appliesToNPC": false,
+      "appliesToEnemy": false,
+      "groupLabel": "Injuries"
+    }
+  ],
+
+  "entityTypes": {
+    "pc": {
+      "enabled": true,
+      "label": "PC",
+      "icon": "🧛",
+      "takeTurns": true
+    },
+    "npc": {
+      "enabled": false
+    },
+    "enemy": {
+      "enabled": true,
+      "label": "Enemy",
+      "icon": "💀",
+      "takeTurns": false
+    }
+  },
+
+  "enemySubtypes": {
+    "threat": {
+      "label": "Threat",
+      "icon": "⚠️",
+      "defaultName": "Threat",
+      "startsCompleted": true,
+      "attributes": [
+        {
+          "id": "rating",
+          "label": "Rating",
+          "type": "counter",
+          "default": 3,
+          "min": 0,
+          "max": null
+        },
+        {
+          "id": "attack",
+          "label": "Attack",
+          "type": "counter",
+          "default": 1,
+          "min": 0,
+          "max": null
+        },
+        {
+          "id": "challenge",
+          "label": "Challenge",
+          "type": "counter",
+          "default": 0,
+          "min": 0,
+          "max": null
+        }
+      ],
+      "sorting": {
+        "attribute": "attack",
+        "order": "desc"
+      }
+    },
+    "objective": {
+      "label": "Objective",
+      "icon": "🎯",
+      "defaultName": "Objective",
+      "startsCompleted": true,
+      "attributes": [
+        {
+          "id": "rating",
+          "label": "Rating",
+          "type": "counter",
+          "default": 5,
+          "min": 0,
+          "max": null
+        },
+        {
+          "id": "primary",
+          "label": "Primary",
+          "type": "boolean",
+          "default": false,
+          "exclusive": true
+        }
+      ],
+      "completionCondition": {
+        "attribute": "rating",
+        "operator": "equals",
+        "value": 0,
+        "moveToSection": "completed-objectives"
+      },
+      "sorting": {
+        "primary": "primary",
+        "order": "primary-first"
+      }
+    }
+  },
+
+  "sections": {
+    "onDeck": {
+      "label": "On Deck",
+      "accepts": ["pc"],
+      "sortOrder": "manual"
+    },
+    "completed": {
+      "label": "Completed",
+      "accepts": ["pc", "enemy"],
+      "sortOrder": "custom",
+      "sortRules": [
+        { "type": "enemy:objective", "order": "primary-first-then-creation" },
+        { "type": "enemy:threat", "order": "attack-desc" },
+        { "type": "pc", "order": "creation" }
+      ]
+    },
+    "completedObjectives": {
+      "label": "Completed Objectives",
+      "accepts": ["enemy:objective"],
+      "sortOrder": "manual"
+    },
+    "stunned": {
+      "label": "Stunned",
+      "accepts": ["pc"]
+    },
+    "dead": {
+      "label": "Dead",
+      "accepts": ["pc", "enemy"]
+    }
+  },
+
+  "calculatedIndicators": [
+    {
+      "id": "total-attack",
+      "label": "Total Attack",
+      "description": "Highest threat attack + 1 for each other threat",
+      "calculation": {
+        "type": "threat-total-attack",
+        "algorithm": {
+          "description": "Sum of highest threat attack plus count of remaining threats",
+          "steps": [
+            "1. Get all threats with their attack values",
+            "2. Find the maximum attack value",
+            "3. Count how many OTHER threats exist (total - 1)",
+            "4. Total Attack = max attack + count of other threats",
+            "Example: [5, 5, 4, 2, 2] → max=5, others=4 → result=9"
+          ]
+        },
+        "inputs": ["enemy:threat.attack"],
+        "recalculateOn": ["threat:created", "threat:deleted", "threat:attack:changed"]
+      },
+      "display": {
+        "position": "top-right",
+        "format": "⚔️ {value}",
+        "visibility": "always"
+      }
+    }
+  ],
+
+  "roundRules": {
+    "endWhen": "all-turn-takers-complete",
+    "description": "Round ends when all PCs have taken their turn (enemies don't take turns)"
+  },
+
+  "names": {
+    "format": "{rank} {firstName}",
+    "rank": [
+      "Kommandant", "Oberst", "Major", "Hauptmann", "Leutnant", "Feldwebel",
+      "Unteroffizier", "Oberleutnant", "Stabsfeldwebel", "Generalmajor",
+      "Sturmbannführer", "Rottenführer", "Brigadeführer", "Gruppenführer",
+      "Scharführer", "Truppführer", "Obersturmbannführer", "Hauptscharführer",
+      "Untersturmführer", "Standartenführer"
+    ],
+    "firstName": [
+      "Klaus", "Heinrich", "Wilhelm", "Fritz", "Otto", "Hans", "Ernst", "Kurt",
+      "Karl", "Ludwig", "Wolf", "Dieter", "Franz", "Max", "Anton", "Georg",
+      "Viktor", "Erich", "Werner", "Hermann", "Rudolf", "Walter", "Gustav", "Friedrich"
+    ]
+  },
+
+  "enemyNaming": {
+    "type": "generated",
+    "nameList": [
+      "Nazi Officer", "SS Guard", "Gestapo Agent", "Wehrmacht Soldier",
+      "Panzer Commander", "Luftwaffe Pilot", "U-Boat Captain", "Storm Trooper"
+    ]
+  }
+}
+

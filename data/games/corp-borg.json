@@ -1,0 +1,75 @@
+{
+  "id": "corp-borg",
+  "name": "Corp Borg",
+  "themeFile": "themes/theme-corp-borg.css",
+  "version": "1.0",
+  "description": "Corporate dystopia initiative tracker",
+
+  "enemyNaming": {
+    "strategy": "generated"
+  },
+
+  "resources": {
+    "primary": {
+      "name": "hp",
+      "displayName": "Hit Points",
+      "min": 0,
+      "max": null,
+      "default": 5,
+      "causesDeathAtMin": true,
+      "showInCard": true,
+      "controls": {
+        "increment": 1,
+        "decrement": 1,
+        "allowNegative": false
+      }
+    }
+  },
+
+  "entityTypes": {
+    "pc": {
+      "enabled": true,
+      "label": "PC",
+      "icon": "👤",
+      "takeTurns": true
+    },
+    "npc": {
+      "enabled": true,
+      "label": "NPC",
+      "icon": "🤝",
+      "takeTurns": true
+    },
+    "enemy": {
+      "enabled": true,
+      "label": "Enemy",
+      "icon": "💀",
+      "takeTurns": true
+    }
+  },
+
+  "roundRules": {
+    "endWhen": "all-turn-takers-complete",
+    "description": "Round ends when all entities have taken their turn"
+  },
+
+  "names": {
+    "format": "{title} {lastName}",
+    "title": [
+      "Executive", "Director", "Manager", "VP", "Analyst", "Consultant", "Supervisor",
+      "Controller", "Overseer", "Chairman", "Secretary", "Auditor", "Coordinator",
+      "Administrator", "Operative", "Specialist", "Officer", "Agent", "Inspector",
+      "Commissioner", "President", "CFO", "CTO", "CEO"
+    ],
+    "lastName": [
+      "Klein", "Sato", "Torres", "Chen", "Burke", "Reed", "Walsh", "Novak", "Park",
+      "Cross", "Voss", "Kane", "Lee", "Fox", "Stone", "Gray", "Black", "White",
+      "Gold", "Steel", "Smith", "Johnson", "Williams", "Brown"
+    ]
+  },
+
+  "enemyNaming": {
+    "type": "incremental",
+    "prefix": "Enemy"
+  }
+}
+

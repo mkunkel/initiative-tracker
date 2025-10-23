@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <!-- Session Selector, Theme Selector and Clear Button -->
+    <!-- Session Selector, Game Selector and Clear Button -->
     <div class="top-controls">
         <button id="clearAll" class="clear-btn-top">Clear All</button>
         <div class="session-selector">
@@ -17,10 +17,10 @@
             </select>
             <button id="manageSessionsBtn" class="manage-sessions-btn" title="Manage Sessions">⚙️</button>
         </div>
-        <div class="theme-selector">
-            <label for="themeSelect">Theme:</label>
-            <select id="themeSelect">
-                <option value="default">Default</option>
+        <div class="game-selector">
+            <label for="gameSelect">Game:</label>
+            <select id="gameSelect">
+                <option value="">Loading...</option>
             </select>
         </div>
     </div>
@@ -28,6 +28,11 @@
     <div class="container">
         <header>
             <h1>RPG Initiative Tracker</h1>
+            <!-- Total Attack Indicator (only shows for games with threats) -->
+            <div id="totalAttackIndicator" class="total-attack-indicator" style="display: none;">
+                <span class="total-attack-label">Total Attack:</span>
+                <span class="total-attack-value">0</span>
+            </div>
 
             <!-- Add Buttons -->
             <div class="add-buttons">
@@ -51,6 +56,16 @@
                     <h2>Completed</h2>
                     <div class="character-list" id="completedList">
                         <!-- Completed characters will be added here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Completed Objectives Section (only for games with objectives) -->
+            <div class="initiative-sections" id="completedObjectivesSection" style="display: none;">
+                <div class="column" id="completedObjectivesColumn">
+                    <h2>✅ Completed Objectives</h2>
+                    <div class="character-list" id="completedObjectivesList">
+                        <!-- Completed objectives appear here -->
                     </div>
                 </div>
             </div>
@@ -156,8 +171,8 @@
                         </label>
                     </div>
                 </div>
-                <div class="form-field">
-                    <label for="modalCharacterHP">Hit Points</label>
+                <div class="form-field" id="characterHPField">
+                    <label for="modalCharacterHP" id="characterResourceLabel">Hit Points</label>
                     <div class="hp-controls">
                         <button class="hp-btn modal-hp-btn" data-modal="character" data-action="decrease">−</button>
                         <div class="hp-display" id="modalCharacterHP">5</div>
@@ -179,8 +194,14 @@
                     <label for="modalEnemyName">Enemy Name</label>
                     <input type="text" id="modalEnemyName" placeholder="Enter enemy name" value="Enemy 1">
                 </div>
-                <div class="form-field">
-                    <label for="modalEnemyHP">Hit Points</label>
+                <div class="form-field" id="enemySubtypeField" style="display: none;">
+                    <label>Enemy Type</label>
+                    <div class="enemy-subtype-selector">
+                        <!-- Dynamically populated based on game config -->
+                    </div>
+                </div>
+                <div class="form-field" id="enemyHPField">
+                    <label for="modalEnemyHP" id="enemyResourceLabel">Hit Points</label>
                     <div class="hp-controls">
                         <button class="hp-btn modal-hp-btn" data-modal="enemy" data-action="decrease">−</button>
                         <div class="hp-display" id="modalEnemyHP">5</div>
@@ -288,6 +309,7 @@
         </div>
     </div>
 
+    <script src="js/game-config.js"></script>
     <script src="js/session-manager.js"></script>
     <script src="js/script.js"></script>
 </body>

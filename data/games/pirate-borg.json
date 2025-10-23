@@ -1,0 +1,76 @@
+{
+  "id": "pirate-borg",
+  "name": "Pirate Borg",
+  "themeFile": "themes/theme-pirate-borg.css",
+  "version": "1.0",
+  "description": "Pirate adventure initiative tracker",
+
+  "enemyNaming": {
+    "strategy": "generated"
+  },
+
+  "resources": {
+    "primary": {
+      "name": "hp",
+      "displayName": "Hit Points",
+      "min": 0,
+      "max": null,
+      "default": 5,
+      "causesDeathAtMin": true,
+      "showInCard": true,
+      "controls": {
+        "increment": 1,
+        "decrement": 1,
+        "allowNegative": false
+      }
+    }
+  },
+
+  "entityTypes": {
+    "pc": {
+      "enabled": true,
+      "label": "PC",
+      "icon": "👤",
+      "takeTurns": true
+    },
+    "npc": {
+      "enabled": true,
+      "label": "NPC",
+      "icon": "🤝",
+      "takeTurns": true
+    },
+    "enemy": {
+      "enabled": true,
+      "label": "Enemy",
+      "icon": "💀",
+      "takeTurns": true
+    }
+  },
+
+  "roundRules": {
+    "endWhen": "all-turn-takers-complete",
+    "description": "Round ends when all entities have taken their turn"
+  },
+
+  "names": {
+    "format": "{epithet|title} {firstName}",
+    "epithet": [
+      "Blackheart", "Scurvy", "Dead-Eye", "Bloody", "One-Eyed", "Cutlass",
+      "Barnacle", "Storm", "Ironhook", "Shark-Bite", "Cannonball", "Mutiny"
+    ],
+    "title": [
+      "Captain", "Admiral", "Commodore", "Bosun", "Quartermaster", "Buccaneer"
+    ],
+    "firstName": [
+      "Bill", "Jane", "Jack", "Mary", "Pete", "Kate", "Bob", "Sarah", "Tom", "Sam",
+      "Clyde", "Mae", "Paul", "Roger", "Kylie", "Mike", "Tess", "Cruz", "Sal", "Bess",
+      "Anne", "Jim", "Morgan", "Kidd"
+    ]
+  },
+
+  "enemyNaming": {
+    "type": "incremental",
+    "prefix": "Enemy"
+  }
+}
+

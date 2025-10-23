@@ -1,0 +1,57 @@
+{
+  "id": "test-game",
+  "name": "Test Game",
+  "themeFile": "themes/theme-mork-borg.css",
+  "version": "1.0",
+  "resources": {
+    "primary": {
+      "name": "hp",
+      "displayName": "Hit Points",
+      "min": 0,
+      "max": null,
+      "default": 10,
+      "causesDeathAtMin": true,
+      "showInCard": true,
+      "controls": {
+        "increment": 1,
+        "decrement": 1,
+        "allowNegative": false
+      }
+    }
+  },
+  "entityTypes": {
+    "pc": {
+      "enabled": true,
+      "label": "PC",
+      "icon": "👤",
+      "takeTurns": true
+    },
+    "npc": {
+      "enabled": true,
+      "label": "NPC",
+      "icon": "🤝",
+      "takeTurns": true
+    },
+    "enemy": {
+      "enabled": true,
+      "label": "Enemy",
+      "icon": "💀",
+      "takeTurns": true
+    }
+  },
+  "roundRules": {
+    "endWhen": "all-turn-takers-complete"
+  },
+  "names": {
+    "characters": [
+      "Test Character 1",
+      "Test Character 2",
+      "Test Character 3"
+    ],
+    "enemies": [
+      "Test Enemy 1",
+      "Test Enemy 2"
+    ]
+  }
+}
+

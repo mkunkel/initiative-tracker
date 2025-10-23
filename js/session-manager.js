@@ -71,6 +71,7 @@ class SessionManager {
                 name: 'Quick Game',
                 type: 'quick',
                 theme: oldTheme || 'default',
+                gameId: 'default', // Assign default game to migrated data
                 created: new Date().toISOString(),
                 lastPlayed: new Date().toISOString(),
                 characters: JSON.parse(oldCharacters),
@@ -87,6 +88,20 @@ class SessionManager {
 
             console.log('Migrated old data to session:', migrationId);
         }
+
+        // Migrate sessions that don't have gameId field
+        let needsSave = false;
+        for (const sessionId in this.sessions) {
+            if (!this.sessions[sessionId].gameId) {
+                this.sessions[sessionId].gameId = 'default';
+                needsSave = true;
+            }
+        }
+
+        if (needsSave) {
+            this.saveSessions();
+            console.log('Migrated sessions to include gameId');
+        }
     }
 
     /**
@@ -101,7 +116,7 @@ class SessionManager {
     /**
      * Create a new session
      */
-    createSession(name, type = 'campaign', theme = 'default') {
+    createSession(name, type = 'campaign', theme = 'default', gameId = 'default') {
         const sessionId = this.generateSessionId(type);
 
         this.sessions[sessionId] = {
@@ -109,6 +124,7 @@ class SessionManager {
             name: name,
             type: type,
             theme: theme,
+            gameId: gameId,
             created: new Date().toISOString(),
             lastPlayed: new Date().toISOString(),
             characters: [],
@@ -123,16 +139,16 @@ class SessionManager {
     /**
      * Create a new campaign session (convenience method)
      */
-    createCampaign(name, theme = 'default') {
-        return this.createSession(name, 'campaign', theme);
+    createCampaign(name, theme = 'default', gameId = 'default') {
+        return this.createSession(name, 'campaign', theme, gameId);
     }
 
     /**
      * Create a new quick game session (convenience method)
      */
-    createQuickGame(name = null, theme = 'default') {
+    createQuickGame(name = null, theme = 'default', gameId = 'default') {
         const gameName = name || `Quick Game ${new Date().toLocaleDateString()}`;
-        return this.createSession(gameName, 'quick', theme);
+        return this.createSession(gameName, 'quick', theme, gameId);
     }
 
     /**

@@ -17,6 +17,7 @@
                 <option value="">Select a session...</option>
             </select>
             <button id="manageSessionsBtn" class="manage-sessions-btn" title="Manage Sessions">⚙️</button>
+            <button id="sessionNotesBtn" class="session-notes-btn" title="Session Notes">📝</button>
         </div>
         <div class="game-selector">
             <label for="gameSelect">Game:</label>
@@ -127,7 +128,7 @@
             </div>
         </div>
 
-        <!-- Notes Modal -->
+        <!-- Entity Notes Modal -->
         <div class="modal" id="notesModal">
             <div class="modal-content modal-large">
                 <h2>📝 Notes: <span id="notesEntityName"></span></h2>
@@ -137,6 +138,27 @@
                 <div class="modal-buttons">
                     <button id="saveNotes" class="primary-btn">💾 Save</button>
                     <button id="cancelNotes" class="secondary-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Session Notes Modal -->
+        <div class="modal" id="sessionNotesModal">
+            <div class="modal-content modal-large">
+                <h2>📝 Session Notes: <span id="sessionNotesName"></span></h2>
+                <div class="form-field">
+                    <textarea id="sessionNotesTextarea" rows="20" placeholder="Add notes for this session/campaign...
+
+• Session summaries
+• Plot points
+• NPCs encountered
+• Loot and rewards
+• Party decisions
+• Next session plans"></textarea>
+                </div>
+                <div class="modal-buttons">
+                    <button id="saveSessionNotes" class="primary-btn">💾 Save</button>
+                    <button id="cancelSessionNotes" class="secondary-btn">Cancel</button>
                 </div>
             </div>
         </div>

@@ -96,6 +96,15 @@ class InitiativeTracker {
         this.cancelNotesBtn = document.getElementById('cancelNotes');
         this.currentNotesEntityId = null;
 
+        // Session notes modal elements
+        this.sessionNotesModal = document.getElementById('sessionNotesModal');
+        this.sessionNotesTextarea = document.getElementById('sessionNotesTextarea');
+        this.sessionNotesName = document.getElementById('sessionNotesName');
+        this.saveSessionNotesBtn = document.getElementById('saveSessionNotes');
+        this.cancelSessionNotesBtn = document.getElementById('cancelSessionNotes');
+        this.sessionNotesBtn = document.getElementById('sessionNotesBtn');
+        this.currentNotesSessionId = null;
+
         // Add modals
         this.addCharacterModal = document.getElementById('addCharacterModal');
         this.addEnemyModal = document.getElementById('addEnemyModal');
@@ -197,6 +206,11 @@ class InitiativeTracker {
         // Notes modal event listeners
         this.saveNotesBtn.addEventListener('click', () => this.saveEntityNotes());
         this.cancelNotesBtn.addEventListener('click', () => this.cancelEntityNotes());
+
+        // Session notes modal event listeners
+        this.saveSessionNotesBtn.addEventListener('click', () => this.saveSessionNotes());
+        this.cancelSessionNotesBtn.addEventListener('click', () => this.cancelSessionNotes());
+        this.sessionNotesBtn.addEventListener('click', () => this.openSessionNotesModal());
 
         // Game selector event (theme changes automatically with game)
         this.gameSelect.addEventListener('change', (e) => this.changeGame(e.target.value));
@@ -1317,6 +1331,52 @@ class InitiativeTracker {
     cancelEntityNotes() {
         this.hideModal(this.notesModal);
         this.currentNotesEntityId = null;
+    }
+
+    // Session notes modal methods
+    openSessionNotesModal() {
+        const currentSession = this.sessionManager.getCurrentSession();
+        if (!currentSession) {
+            alert('No session selected. Please create or select a session first.');
+            return;
+        }
+
+        this.currentNotesSessionId = currentSession.id;
+        this.sessionNotesName.textContent = currentSession.name;
+        this.sessionNotesTextarea.value = currentSession.notes || '';
+        this.showModal(this.sessionNotesModal);
+        setTimeout(() => this.sessionNotesTextarea.focus(), 100);
+    }
+
+    openSessionNotesModalFromManager(sessionId) {
+        const session = this.sessionManager.getSession(sessionId);
+        if (!session) return;
+
+        this.currentNotesSessionId = sessionId;
+        this.sessionNotesName.textContent = session.name;
+        this.sessionNotesTextarea.value = session.notes || '';
+        this.showModal(this.sessionNotesModal);
+        setTimeout(() => this.sessionNotesTextarea.focus(), 100);
+    }
+
+    saveSessionNotes() {
+        if (!this.currentNotesSessionId) return;
+
+        const notes = this.sessionNotesTextarea.value.trim();
+        this.sessionManager.updateSession(this.currentNotesSessionId, { notes });
+
+        this.hideModal(this.sessionNotesModal);
+        this.currentNotesSessionId = null;
+
+        // Re-render session lists to update badges
+        if (this.manageSessionsModal && this.manageSessionsModal.style.display === 'block') {
+            this.renderSessionLists();
+        }
+    }
+
+    cancelSessionNotes() {
+        this.hideModal(this.sessionNotesModal);
+        this.currentNotesSessionId = null;
     }
 
     convertEntityType(entityId) {
@@ -2455,6 +2515,17 @@ class InitiativeTracker {
         renameBtn.title = 'Rename';
         renameBtn.onclick = () => this.openRenameModal(session.id);
         actions.appendChild(renameBtn);
+
+        const notesBtn = document.createElement('button');
+        notesBtn.textContent = '📝';
+        notesBtn.className = 'session-btn notes-btn-small';
+        notesBtn.title = 'Session Notes';
+        // Add badge if session has notes
+        if (session.notes && session.notes.trim().length > 0) {
+            notesBtn.innerHTML = '📝<span class="notes-badge"></span>';
+        }
+        notesBtn.onclick = () => this.openSessionNotesModalFromManager(session.id);
+        actions.appendChild(notesBtn);
 
         const exportBtn = document.createElement('button');
         exportBtn.textContent = '📤';

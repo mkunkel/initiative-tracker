@@ -119,8 +119,8 @@ describe('Custom Tracker System', function() {
 
             expect(char.trackers).to.exist;
             expect(char.trackers['injuries-1-2']).to.exist;
-            expect(char.trackers['injuries-2-3']).to.exist;
             expect(char.trackers['injuries-3-4']).to.exist;
+            expect(char.trackers['injuries-5-6']).to.exist;
         });
 
         it('should initialize checkbox trackers with correct count', async function() {
@@ -128,8 +128,8 @@ describe('Custom Tracker System', function() {
             const char = tracker.addCharacter('Test', 10);
 
             expect(char.trackers['injuries-1-2']).to.have.lengthOf(2);
-            expect(char.trackers['injuries-2-3']).to.have.lengthOf(2);
             expect(char.trackers['injuries-3-4']).to.have.lengthOf(2);
+            expect(char.trackers['injuries-5-6']).to.have.lengthOf(2);
         });
 
         it('should initialize all checkboxes as unchecked', async function() {
@@ -137,8 +137,8 @@ describe('Custom Tracker System', function() {
             const char = tracker.addCharacter('Test', 10);
 
             expect(char.trackers['injuries-1-2']).to.deep.equal([false, false]);
-            expect(char.trackers['injuries-2-3']).to.deep.equal([false, false]);
             expect(char.trackers['injuries-3-4']).to.deep.equal([false, false]);
+            expect(char.trackers['injuries-5-6']).to.deep.equal([false, false]);
         });
     });
 
@@ -159,11 +159,11 @@ describe('Custom Tracker System', function() {
 
             tracker.updateTracker(char.id, 'injuries-1-2', 0, true);
             tracker.updateTracker(char.id, 'injuries-1-2', 1, true);
-            tracker.updateTracker(char.id, 'injuries-2-3', 0, true);
+            tracker.updateTracker(char.id, 'injuries-3-4', 0, true);
 
             expect(char.trackers['injuries-1-2']).to.deep.equal([true, true]);
-            expect(char.trackers['injuries-2-3']).to.deep.equal([true, false]);
-            expect(char.trackers['injuries-3-4']).to.deep.equal([false, false]);
+            expect(char.trackers['injuries-3-4']).to.deep.equal([true, false]);
+            expect(char.trackers['injuries-5-6']).to.deep.equal([false, false]);
         });
 
         it('should toggle checkbox value', async function() {
@@ -265,8 +265,8 @@ describe('Custom Tracker System', function() {
 
             const trackers = tracker.gameConfig.customTrackers;
             expect(trackers[0].label).to.equal('1-2');
-            expect(trackers[1].label).to.equal('2-3');
-            expect(trackers[2].label).to.equal('3-4');
+            expect(trackers[1].label).to.equal('3-4');
+            expect(trackers[2].label).to.equal('5-6');
         });
 
         it('should read tracker group labels from config', async function() {

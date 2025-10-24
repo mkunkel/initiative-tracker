@@ -42,6 +42,7 @@ class InitiativeTracker {
         this.loadCharacterNames();
         this.loadSavedData();
         this.populateSessionSelector();
+        this.updateSessionNotesBadge(); // Update session notes badge on init
     }
 
     async loadGameConfig(gameId) {
@@ -1322,6 +1323,7 @@ class InitiativeTracker {
         if (entity) {
             entity.notes = this.notesTextarea.value.trim();
             this.saveData();
+            this.renderCharacters(); // Re-render to update badge
         }
 
         this.hideModal(this.notesModal);
@@ -1368,7 +1370,8 @@ class InitiativeTracker {
         this.hideModal(this.sessionNotesModal);
         this.currentNotesSessionId = null;
 
-        // Re-render session lists to update badges
+        // Update badges in both locations
+        this.updateSessionNotesBadge();
         if (this.manageSessionsModal && this.manageSessionsModal.style.display === 'block') {
             this.renderSessionLists();
         }
@@ -1377,6 +1380,26 @@ class InitiativeTracker {
     cancelSessionNotes() {
         this.hideModal(this.sessionNotesModal);
         this.currentNotesSessionId = null;
+    }
+
+    updateSessionNotesBadge() {
+        const currentSession = this.sessionManager.getCurrentSession();
+        if (!currentSession || !this.sessionNotesBtn) return;
+
+        const hasNotes = currentSession.notes && currentSession.notes.trim().length > 0;
+
+        // Remove existing badge if any
+        const existingBadge = this.sessionNotesBtn.querySelector('.notes-badge');
+        if (existingBadge) {
+            existingBadge.remove();
+        }
+
+        // Add badge if session has notes
+        if (hasNotes) {
+            const badge = document.createElement('span');
+            badge.className = 'notes-badge';
+            this.sessionNotesBtn.appendChild(badge);
+        }
     }
 
     convertEntityType(entityId) {
@@ -2420,6 +2443,9 @@ class InitiativeTracker {
 
         // Render
         this.renderCharacters();
+
+        // Update session notes badge
+        this.updateSessionNotesBadge();
     }
 
     saveCurrentSession() {
